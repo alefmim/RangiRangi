@@ -31,7 +31,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db' # Database connectio
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Because we don't need it
 db = SQLAlchemy(app)
 
-# Persian months
+# Persian months (We'll use it to generate 'dispdate')
 months = {1:'فروردین', 2:'اردیبهشت', 3:'خرداد', 4:'تیر', 5:'مرداد', 6:'شهریور', 7:'مهر', 8:'آبان', 9:'آذر', 10:'دی', 11:'بهمن', 12:'اسفند'}
 
 # Order Columns are currently not being used but we'll use them in the future!
