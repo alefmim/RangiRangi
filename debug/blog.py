@@ -16,14 +16,7 @@ from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from random import randrange
-import datetime
-import re
-import os
-import locale
-import jdatetime
-import json
-import hashlib
-import urllib.parse
+import datetime, re, os, jdatetime, json, hashlib, urllib.parse
 
 PPP = 10 # Number of Posts Per Page
 
