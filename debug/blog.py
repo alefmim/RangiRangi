@@ -780,7 +780,7 @@ def install():
 		# Save the default password (md5 hash of 'admin') in our new config
 		newpwd = hashlib.md5('admin'.encode('utf-8'))
 		newconfig['pwd'] = newpwd.hexdigest()
-		# Create a config file using our new configs 
+		# Create a config file using our new config
 		json.dump(newconfig, configFile)
 		# Give user admin's password!
 		flash('گذرواژه :\n\nadmin')
