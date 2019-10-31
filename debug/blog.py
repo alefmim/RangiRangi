@@ -712,9 +712,9 @@ def removelink():
 
 # This function handles the login process and user authentication 
 @app.route("/login", methods=['POST'])	# Limit the number of allowed requests to 
-@limiter.limit("3/minute") 				# 3		per minute
-@limiter.limit("15/hour")				# 15	per hour
-@limiter.limit("45/day")				# 45	per day
+@limiter.limit("3/minute") 		# 3	per minute
+@limiter.limit("15/hour")		# 15	per hour
+@limiter.limit("45/day")		# 45	per day
 def login():
 	# If user didn't login yet then we'll save (logged_in = False) for his session!
 	if not 'logged_in' in session :
