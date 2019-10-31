@@ -611,7 +611,7 @@ def removecategory():
 		# Find the category by its id in the database and delete it
 		dbcategory.query.filter(dbcategory.catid == id).delete()
 		# After deleting the category we'll delete all the posts that belong to that category too
-		# There's no Do..While in python so we'll use and endless While(True) Loop
+		# There's no Do..While in python so we'll use an endless While(True) Loop
 		while True:
 			# Find the posts that belong the removed category
 			post = dbpost.query.filter(dbpost.category == id).first()
