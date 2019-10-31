@@ -253,7 +253,7 @@ def config():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Redirect to the main page
 		return redirect(url_for('index'))
@@ -346,7 +346,7 @@ def deletecomment():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Return status code 401 'UNAUTHORIZED'
 		return ('', 401)
@@ -395,7 +395,7 @@ def post():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Redirect to the main page
 		return redirect(url_for('index'))
@@ -511,7 +511,7 @@ def deletepost():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Redirect to the main page
 		return redirect(url_for('index'))
@@ -533,7 +533,7 @@ def newcategory():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Redirect to the main page
 		return redirect(url_for('index'))
@@ -563,7 +563,7 @@ def editcategory():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Redirect to the main page
 		return redirect(url_for('index'))
@@ -593,7 +593,7 @@ def removecategory():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Redirect to the main page
 		return redirect(url_for('index'))
@@ -631,7 +631,7 @@ def addlink():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Redirect to the main page
 		return redirect(url_for('index'))
@@ -660,7 +660,7 @@ def editlink():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Redirect to the main page
 		return redirect(url_for('index'))
@@ -693,7 +693,7 @@ def removelink():
 	login()
 	# If 'logged_in' is False then user has no admin privileges
 	if session['logged_in'] == False :
-		# Ask the user to login first!
+		# Ask user to login first!
 		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 		# Redirect to the main page
 		return redirect(url_for('index'))
@@ -736,7 +736,7 @@ def login():
 			session['logged_in'] = True
 		# If the password is wrong
 		elif 'pwd' in request.form :
-			# Ask the user to enter the password again
+			# Ask user to enter the password again
 			flash('خطا! گذرواژه صحیح نیست، لطفاً دوباره تلاش کنید.')
 	# Return to the main page
 	return redirect(url_for('index'))
