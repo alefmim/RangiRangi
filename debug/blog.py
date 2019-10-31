@@ -288,7 +288,7 @@ def config():
 				if  config['pwd'] == currpwd.hexdigest() :
 					# If admin requested to change the password 
 					if request.form.get('newpwd') != '' :
-						# Hash new password
+						# Hash the new password
 						newpwd = hashlib.md5(request.form.get('newpwd').encode('utf-8'))
 						# Save hash to config object
 						newconfig['pwd'] = newpwd.hexdigest()
