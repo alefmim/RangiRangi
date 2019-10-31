@@ -1,0 +1,149 @@
+* {
+	box-sizing: border-box;
+}
+
+*:focus {
+	outline: none;
+}
+
+html {
+	height: 100%;
+	scroll-behavior: smooth;
+}
+
+body {
+	background-color: #FFFFFF;
+	height: 100%;
+	margin: 0;
+}
+
+p {
+	direction: rtl;
+}
+
+.colorful {
+	background:
+		-webkit-linear-gradient(315deg, hsla(160.52, 95.97%, 43.32%, 1) 0%, hsla(160.52, 95.97%, 43.32%, 0) 70%),
+		-webkit-linear-gradient(65deg, hsla(56.83, 96.16%, 49.73%, 1) 10%, hsla(56.83, 96.16%, 49.73%, 0) 80%),
+		-webkit-linear-gradient(135deg, hsla(300.11, 99.22%, 49.14%, 1) 15%, hsla(300.11, 99.22%, 49.14%, 0) 80%),
+		-webkit-linear-gradient(205deg, hsla(139.57, 90.09%, 45.04%, 1) 100%, hsla(139.57, 90.09%, 45.04%, 0) 70%);
+	background:
+		linear-gradient(135deg, hsla(160.52, 95.97%, 43.32%, 1) 0%, hsla(160.52, 95.97%, 43.32%, 0) 70%),
+		linear-gradient(25deg, hsla(56.83, 96.16%, 49.73%, 1) 10%, hsla(56.83, 96.16%, 49.73%, 0) 80%),
+		linear-gradient(315deg, hsla(300.11, 99.22%, 49.14%, 1) 15%, hsla(300.11, 99.22%, 49.14%, 0) 80%),
+		linear-gradient(245deg, hsla(139.57, 90.09%, 45.04%, 1) 100%, hsla(139.57, 90.09%, 45.04%, 0) 70%);
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+}
+
+.header {
+	direction: rtl;
+	height: 96px;
+	opacity: 0.9;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.09);
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
+}
+
+.headertext {
+	color: #444444;
+	text-align: center;
+	font-size: 36px;
+	font-weight: bold;
+	font-family: Vazir, Tahoma, sans-serif;
+	text-shadow: 0 0 8px #888888;
+	text-decoration: none;
+	padding-top: 20px;
+}
+
+.setupform {
+	margin: 50px auto; 
+	text-align: right;
+	direction: rtl;
+	width: 50%;
+	padding: 20px 40px 20px 40px;
+	background-color: rgba(255, 255, 255, 0.5);
+	position: relative;
+	border: 0px solid rgba(255, 255, 255, 0.5);
+	-webkit-border-radius: 25px;
+	-moz-border-radius: 25px;
+	border-radius: 25px;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.09);
+	background: linear-gradient(0deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.5));
+}
+
+input[type=text], input[type=password], input[type=email] {
+	font-family: Vazir, Tahoma, sans-serif;
+	font-weight: bold;
+	font-size: 16px;
+	direction: rtl;
+	width: 100%;
+	margin: 12px 0px 32px 0px;
+	padding: 6px 32px;
+	border: none;
+	text-decoration: none;
+	background-color : #FFFFFF;
+	color: #444444;
+	opacity: 0.75;
+	transition: opacity 0.4s ease-in-out;
+	-webkit-border-radius: 50px;
+	-moz-border-radius: 50px;
+	border-radius: 50px;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.05), 0 6px 20px 0 rgba(0, 0, 0, 0.04);
+}
+
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus {
+	opacity: 1;
+}
+
+.bluebtn {
+	font-family: Vazir, Tahoma, sans-serif;
+	font-weight: bold;
+	font-size: 16px;
+	direction: rtl;
+	width: 100%;
+	margin: 12px 0px 12px 0px;
+	padding: 6px 32px 6px 64px;
+	background-color: #2288FF;
+	color: #FFFFFF;
+	border: none;
+	-webkit-border-radius: 50px;
+	-moz-border-radius: 50px;
+	border-radius: 50px;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.05), 0 6px 20px 0 rgba(0, 0, 0, 0.04);
+}
+
+.text {
+	color: #444444;
+	font-size: 16px;
+	font-weight: bold;
+	font-family: Vazir, Tahoma, sans-serif;
+	text-shadow: 0 0 24px #888888;
+}
+
+/* font-Tanha */
+@font-face {
+	font-family: Tanha;
+	src: url('./fonts/tanha.eot');
+	src: url('./fonts/tanha.eot?#iefix') format('embedded-opentype'),
+	url('./fonts/tanha.woff') format('woff'),
+	url('./fonts/tanha.ttf') format('truetype');
+	font-weight: normal;
+}	
+/* font-Vazir */
+@font-face {
+	font-family: Vazir;
+	src: url('./fonts/vazir.eot');
+	src: url('./fonts/vazir.eot?#iefix') format('embedded-opentype'),
+	url('./fonts/vazir.woff') format('woff'),
+	url('./fonts/vazir.ttf') format('truetype');
+	font-weight: normal;
+}	
+/* font-Yekan */
+@font-face {
+	font-family: Yekan;
+	src: url('./fonts/yekan.eot');
+	src: url('./fonts/yekan.eot?#iefix') format('embedded-opentype'),
+	url('./fonts/yekan.woff') format('woff'),
+	url('./fonts/yekan.ttf') format('truetype');
+	font-weight: normal;
+}

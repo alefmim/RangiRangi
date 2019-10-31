@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>مدیریت مطلب</title>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+		<link rel="stylesheet" href="{{ url_for('static', filename='post.css') }}">
+	</head>
+	<body class="colorful">
+		<div class="whitegrad">
+			<div class="header">
+				<div class="headertext">
+					<a name="root" href="{{ request.url_root }}" class="headertext">
+					مدیریت مطلب
+					</a>
+				</div>
+			</div>
+		</div>
+		
+		<form class="editform" action="{{ request.script_root }}/post" method="post" accept-charset="utf-8">
+		
+			<span class="text">دسته بندی :</span>
+			<select id="target" name="cat">
+				{% for category in categories %}
+				<option value="{{category['catid']}}" {% if post['category'] == category['catid'] %} selected {% endif %}>{{category['name']}}</option>
+				{% endfor %}
+			</select> 
+			
+			<span class="text">عنوان مطلب :</span>
+			<input type="text" name="title" value="{{ post['title'] }}" required>
+			
+			<span class="text tooltip">آدرس محتوای چند رسانه ای* :
+			<span class="tooltiptext">در حال حاضر فقط امکان درج تصاویر وجود دارد<br>[ پر کردن این فیلد الزامی نیست ]</span></span>
+			<input type="text" name="addr" value="{{ post['mediaaddr'] }}">
+			
+			<span class="text">محتوای متنی :</span>
+			<textarea id="content" name="content" maxlength="512" rows="5" required>{{ post['content'] }}</textarea>
+			
+			<input type="hidden" name="id" value="{{ post['postid'] }}">
+			
+			<button type="submit" class="bluebtn" id="submit">ارسال</button>
+		</form>
+	
+	</body>
+</html>
