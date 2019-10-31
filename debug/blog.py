@@ -717,7 +717,7 @@ def removelink():
 	# Return "Failure!"
 	return ('', 400)
 
-# This function handles the login process and saving 
+# This function handles the login process and user authentication 
 @app.route("/login", methods=['POST'])	# Limit the number of allowed requests to 
 @limiter.limit("3/minute") 				# 3		per minute
 @limiter.limit("15/hour")				# 15	per hour
