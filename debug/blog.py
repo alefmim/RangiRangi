@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
-#################################################
-#			RangiRangi v191030alpha				#
-#  A simple Microblogging CMS written in Python	#
-#			by Amir Mohammad Anvari				#
-#	Contact me at AmirMohammad@Programmer.Net	#
-#################################################
+# # # # #
+# RangiRangi v191030alpha
+# A simple flask based Microblogging CMS written in Python
+# Coded by Amir Mohammad Anvari
+# Contact me at AmirMohammad@Programmer.Net
+# # # # # # # # #  #
 
 from flup.server.fcgi import WSGIServer
 from flask import Flask, render_template, request \
