@@ -220,7 +220,7 @@ def page():
 	# Limit results to the number of Posts Per Page
 	results = query.offset(pageNum * PPP).limit(PPP)
 	
-	# Send "END." if there's no more results to send with status code 200 which means request was successful
+	# Send "END." if there's no more results to send with status code 200 which means the request was successful
 	if results.count() == 0 :
 		return Response(response="END.", status=200, mimetype='text/html')
 	
