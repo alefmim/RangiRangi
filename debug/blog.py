@@ -406,7 +406,7 @@ def post():
 		db.session.add(category)
 		# Save changes to the database
 		db.session.commit()
-	# Get the list of categories
+	# Get list of categories
 	categories = dbcategory.query.all()
 	# Make a new post!
 	post = {}
