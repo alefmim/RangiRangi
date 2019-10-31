@@ -797,3 +797,4 @@ if __name__ == '__main__':
 	#WSGIServer(app, bindAddress='/tmp/blog-fcgi.sock-0').run()
 	#WSGIServer(app).run()
 
+ 
