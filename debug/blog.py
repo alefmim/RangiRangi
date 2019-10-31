@@ -198,7 +198,7 @@ def page():
 	category = request.args.get('category', default = -1, type = int)
 	sort = request.args.get('sort', default = 'ascdate', type = str)
 	tag  = request.args.get('tag', default = '', type = str)
-	# We'll use this object to execute database queries
+	# We'll use this object to execute database queries and find the posts which user requested!
 	query = dbpost.query
 	# Handle the requested arguments
 	if category > -1 : # Find all posts in a specific category
