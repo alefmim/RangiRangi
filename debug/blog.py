@@ -168,7 +168,7 @@ def index():
 	# If someone looks for a specific hashtag we'll increase its popularity by 1 
 	# Get the hashtag from the request
 	tag  = request.args.get('tag', default = '', type = str)
-	# Find the hashtag on databse
+	# Find the hashtag in database
 	t = dbtag.query.filter(dbtag.keyword == tag)
 	# If it's not a bad request and hashtag exists in the database
 	if t.count() != 0 :
