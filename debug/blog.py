@@ -45,9 +45,9 @@ months = {1:'فروردین', 2:'اردیبهشت', 3:'خرداد', 4:'تیر', 
 # Category Object (Categories Table)
 class dbcategory(db.Model):
 	catid = db.Column('catid', db.Integer, primary_key = True, autoincrement=True)		# Category ID (Primary Key)
-	name = db.Column('name', db.String(32), nullable=False, unique=True)				# Category Name
-	order = db.Column('order', db.Integer, nullable=False)								# Category Order
-	categories = db.relationship('dbpost', backref=db.backref("dbcategory", lazy=True)) # Defining a foreign key (backref to category in posts table!)
+	name = db.Column('name', db.String(32), nullable=False, unique=True)			# Category Name
+	order = db.Column('order', db.Integer, nullable=False)					# Category Order
+	categories = db.relationship('dbpost', backref=db.backref("dbcategory", lazy=True)) 	# Defining a foreign key (backref to category in posts table!)
 	# Constructor
 	def __init__(self, name, order):
 		self.name = name	# Category Name
@@ -55,18 +55,18 @@ class dbcategory(db.Model):
 
 # Post Object (Posts Table)
 class dbpost(db.Model):
-	postid = db.Column('postid', db.Integer, primary_key = True, autoincrement=True)				# Post ID (Primary Key)
+	postid = db.Column('postid', db.Integer, primary_key = True, autoincrement=True)		# Post ID (Primary Key)
 	category = db.Column('category', db.Integer, db.ForeignKey('dbcategory.catid'), nullable=False)	# Defining a foreign key
-	title = db.Column('title', db.String(32), nullable=True)										# Post Title
-	content = db.Column('content', db.String(512), nullable=False) 									# Post Content
-	cdatetime = db.Column('datetime', db.String(24), nullable=False)								# Post Date/Time
-	dispdate = db.Column('dispdate', db.String(24), nullable=False)									# Post Jalali Date/Time to display below each post!
-	comments = db.Column('comments', db.Integer, nullable=False)									# Number of comments on each post
-	mediaaddr = db.Column('mediaaddr', db.String(256), nullable=True)								# Multimedia File (Image) Address
-	posts = db.relationship('dbcomment', backref=db.backref("dbcomment", uselist=False))			# Defining a foreign key (backref to pid in comments table!)
+	title = db.Column('title', db.String(32), nullable=True)					# Post Title
+	content = db.Column('content', db.String(512), nullable=False) 					# Post Content
+	cdatetime = db.Column('datetime', db.String(24), nullable=False)				# Post Date/Time
+	dispdate = db.Column('dispdate', db.String(24), nullable=False)					# Post Jalali Date/Time to display below each post!
+	comments = db.Column('comments', db.Integer, nullable=False)					# Number of comments on each post
+	mediaaddr = db.Column('mediaaddr', db.String(256), nullable=True)				# Multimedia File (Image) Address
+	posts = db.relationship('dbcomment', backref=db.backref("dbcomment", uselist=False))		# Defining a foreign key (backref to pid in comments table!)
 	# Constructor
 	def __init__(self, title, content, cdatetime, dispdate, comments, category, mediaaddr):
-		self.title = title			# Post Title
+		self.title = title		# Post Title
 		self.content = content		# Post Content
 		self.category = category	# Post Category
 		self.cdatetime = cdatetime	# Post Date/Time
@@ -76,49 +76,48 @@ class dbpost(db.Model):
 	
 # Comment Object (Comments Table)
 class dbcomment(db.Model):
-	cmtid = db.Column('commentid', db.Integer, primary_key = True, autoincrement=True)		# Comment ID (Primary Key)
+	cmtid = db.Column('commentid', db.Integer, primary_key = True, autoincrement=True)	# Comment ID (Primary Key)
 	pid = db.Column('postid', db.Integer, db.ForeignKey('dbpost.postid'), nullable=False)	# Post ID (Foreign Key)
-	title = db.Column('title', db.String(32), nullable=True)								# Comment Title
-	content = db.Column('content', db.String(256), nullable=False) 							# Comment Content
-	cdatetime = db.Column('datetime', db.String(20), nullable=False)						# Comment Date/Time
-	dispdate = db.Column('dispdate', db.String(24), nullable=False)							# Comment Jalali Date/Time to display above each comment!
-	name = db.Column('name', db.String(24), nullable=False) 								# Comment's Author's Name
-	website = db.Column('website', db.String(24), nullable=True) 							# Comment's Author's Website
-	emailaddr = db.Column('emailaddr', db.String(40), nullable=True) 						# Comment's Author's EMail Address
+	title = db.Column('title', db.String(32), nullable=True)				# Comment Title
+	content = db.Column('content', db.String(256), nullable=False) 				# Comment Content
+	cdatetime = db.Column('datetime', db.String(20), nullable=False)			# Comment Date/Time
+	dispdate = db.Column('dispdate', db.String(24), nullable=False)				# Comment Jalali Date/Time to display above each comment!
+	name = db.Column('name', db.String(24), nullable=False) 				# Comment's Author's Name
+	website = db.Column('website', db.String(24), nullable=True) 				# Comment's Author's Website
+	emailaddr = db.Column('emailaddr', db.String(40), nullable=True) 			# Comment's Author's EMail Address
 	# Constructor
 	def __init__(self, pid, title, content, cdatetime, dispdate, name, website, emailaddr):
-		self.pid = pid				# Post ID (Foreign Key)
-		self.title = title			# Comment Title
+		self.pid = pid			# Post ID (Foreign Key)
 		self.content = content		# Comment Content
 		self.cdatetime = cdatetime	# Comment Date/Time
 		self.dispdate = dispdate	# Comment Jalali Date/Time to display above each comment!
-		self.name = name			# Comment Author's Name
+		self.name = name		# Comment Author's Name
 		self.website = website		# Comment Author's Website
 		self.emailaddr = emailaddr	# Comment Author's EMail Address
 
 # Tag Object (Tags Table)
 class dbtag(db.Model):
 	tagid = db.Column('tagid', db.Integer, primary_key = True, autoincrement=True)	# Tag ID (Primary Key)
-	keyword = db.Column('keyword', db.String(512), nullable=False, unique=True)		# Tag Keyword
-	frequency = db.Column('frequency', db.Integer, nullable=False)					# Tag Frequency
-	popularity = db.Column('popularity', db.Integer, nullable=False)				# Tag Popularity
+	keyword = db.Column('keyword', db.String(512), nullable=False, unique=True)	# Tag Keyword
+	frequency = db.Column('frequency', db.Integer, nullable=False)			# Tag Frequency
+	popularity = db.Column('popularity', db.Integer, nullable=False)		# Tag Popularity
 	# Constructor
 	def __init__(self, keyword, frequency, popularity):
-		self.keyword = keyword			# Tag Keyword
-		self.frequency = frequency		# Tag Frequency
+		self.keyword = keyword		# Tag Keyword
+		self.frequency = frequency	# Tag Frequency
 		self.popularity = popularity	# Tag Popularity
 
 # Link Object (Links Table)
 class dblink(db.Model):
 	linkid = db.Column('linkid', db.Integer, primary_key = True, autoincrement=True)	# Link ID (Primary Key)
-	name = db.Column('name', db.String(24), nullable=False, unique=True)				# Link Name
-	address = db.Column('address', db.String(256), nullable=False, unique=True)			# Link Address
-	order = db.Column('order', db.Integer, nullable=False)								# Link Order
+	name = db.Column('name', db.String(24), nullable=False, unique=True)			# Link Name
+	address = db.Column('address', db.String(256), nullable=False, unique=True)		# Link Address
+	order = db.Column('order', db.Integer, nullable=False)					# Link Order
 	# Constructor
 	def __init__(self, name, address, order):
-		self.name = name		# Link Name
+		self.name = name	# Link Name
 		self.address = address	# Link Address
-		self.order = order		# Link Order
+		self.order = order	# Link Order
 
 
 # This function replaces all hashtags in 'rawText' with linked hashtags 
