@@ -789,5 +789,3 @@ if __name__ == '__main__':
 	# Run the program (Uncomment the lines below on the deployment environment!)
 	#WSGIServer(app, bindAddress='/tmp/blog-fcgi.sock-0').run()
 	#WSGIServer(app).run()
-
- 
