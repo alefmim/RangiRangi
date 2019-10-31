@@ -165,7 +165,7 @@ def index():
 	except FileNotFoundError : # This exception means that our program is not installed and configured yet!
 		# So we'll call install() to make the config file and database file and redirect user to config page
 		return render_template("config.html", config=install()) 
-	# If someone looks for a specific hashtag we'll increase it's popularity by 1 
+	# If someone looks for a specific hashtag we'll increase its popularity by 1 
 	# Get the hashtag from the request
 	tag  = request.args.get('tag', default = '', type = str)
 	# Find the hashtag on databse
@@ -483,7 +483,7 @@ def post():
 			else :
 				# Find the hashtag in the database
 				tag = tag.first()
-				# Increase it's frequency by 1
+				# Increase its frequency by 1
 				tag.frequency = tag.frequency + 1
 			# Save changes to the database
 			db.session.commit()
