@@ -440,7 +440,7 @@ def post():
 			post.title = title
 			post.mediaaddr = mediaaddr
 			post.content = content
-		# If postid is empty then it's a new post and user is not editing and existing post
+		# If postid is empty then it's a new post and user is not editing an existing post
 		else :
 			# Get the Date/Time
 			cdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
