@@ -1,4 +1,6 @@
-## Welcome to GitHub Pages
+## سلام
+
+متن آزمایشی
 
 You can use the [editor on GitHub](https://github.com/alefmim/RangiRangi/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 
@@ -15,11 +17,11 @@ Syntax highlighted code block
 ## Header 2
 ### Header 3
 
-- Bulleted
-- List
+- لیست
+- بدون شمارش
 
-1. Numbered
-2. List
+1. لیست
+2. شمارشی
 
 **Bold** and _Italic_ and `Code` text
 
