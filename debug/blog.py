@@ -289,8 +289,12 @@ def config():
 						# If admin didn't request to change the password then we'll use the old password in new config too
 						newconfig['pwd'] = config['pwd']
 				else : # If password was wrong!
+					# Save old configs in the config file
+					# We have to do this because we opened the config file with 'w' parameter which means erase the file's data and open it for output!
 					json.dump(config, configFile)
+					# Ask user to enter the password again
 					flash('خطا! گذرواژه صحیح نیست، لطفاً دوباره تلاش کنید.')
+					# Fill the page with old configs
 					return render_template("config.html", config=config)
 			# If everything goes well, we'll save new config to the config file
 			json.dump(newconfig, configFile)

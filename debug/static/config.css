@@ -71,7 +71,7 @@ p {
 	background: linear-gradient(0deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.5));
 }
 
-input[type=text], input[type=password], input[type=email] {
+input[type=text], input[type=password], input[type=email], input[type=number] {
 	font-family: Vazir, Tahoma, sans-serif;
 	font-weight: bold;
 	font-size: 16px;
