@@ -43,6 +43,9 @@
 		<span class="text">پست الکترونیک :</span>
 		<input type="email" name="mailaddr" value="{{ config['mailaddr'] }}" required>
 		
+		<span class="text">تعداد پست ها در هر صفحه :</span>
+		<input type="text" name="ppp" value="{{ config['ppp'] }}" onkeyup='check();' required>
+		
 		<button type="submit" class="bluebtn" id="submit" onclick='return check();'>ارسال</button>
 	</form>
 	

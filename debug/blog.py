@@ -18,8 +18,6 @@ from sqlalchemy import or_
 from random import randrange
 import datetime, re, os, jdatetime, json, hashlib, urllib.parse
 
-PPP = 10 # Number of Posts Per Page
-
 # Initializations and Basic Configurations
 app = Flask(__name__)
 limiter = Limiter(
@@ -123,6 +121,9 @@ def prcText(rawText, url):
 		rawText = rawText.replace('#' + hashTag, "<a href='" \
 		+ url + "/?tag=" + hashTag + \
 		"' class='hashtag'>#" + hashTag + "</a>")
+		
+	# Replace new lines with html <br> tag!
+	rawText = rawText.replace('\n', '<br>')
 	# Return the produced string to appear on the requested page
 	return Markup(rawText)
 
@@ -209,16 +210,22 @@ def page():
 		query = query.order_by(dbpost.comments)	
 	if sort == 'desccomments' : # Sort by Number of Comments (Descending Order)
 		query = query.order_by(dbpost.comments.desc())
-		
+	
+	# Load config file to the memory as config object
+	with open('config.json', 'r') as configFile :
+		config = json.load(configFile)
+		# Get ppp value from config object and save it in a variable (ppp means Posts Per Page) 
+		ppp = config['ppp']
+	
 	# Limit results to the number of Posts Per Page
-	results = query.offset(pageNum * PPP).limit(PPP)
+	results = query.offset(pageNum * ppp).limit(ppp)
 	
 	# Send "END." if there's no more results to send with status code 200 which means the request was successful
 	if results.count() == 0 :
 		return Response(response="END.", status=200, mimetype='text/html')
 	
 	# This small block of code will handle the positioning of the posts (should they appear on the right side or the left side of the timeline?!)
-	if (PPP % 2) == 1 and (pageNum % 2) == 1 :
+	if (ppp % 2) == 1 and (pageNum % 2) == 1 :
 		c = 0
 	else :
 		c = 1
@@ -265,6 +272,7 @@ def config():
 		
 	# If there's any request from client to change the config
 	if 'title' in request.form :
+		# Open config file for output and erase its data
 		with open('config.json', 'w') as configFile: 
 			# We'll make a new config object
 			newconfig = {}
@@ -273,6 +281,11 @@ def config():
 			newconfig['desc'] = request.form.get('desc')
 			newconfig['dispname'] = request.form.get('dispname')
 			newconfig['mailaddr'] = request.form.get('mailaddr')
+			newconfig['ppp'] = request.form.get('ppp', default=10, type=int)
+			# valid range for ppp is [1,100] (ppp means Posts Per Page)
+			if (newconfig['ppp'] < 1 or newconfig['ppp'] > 100) : 
+				# If ppp value was out of its valid range then set its value to 10
+				newconfig['ppp'] = 10
 			# Check password
 			if 'oldpwd' in request.form and 'newpwd' in request.form :
 				# Hash the password entered by admin
@@ -774,6 +787,7 @@ def install():
 		newconfig['desc'] = ''
 		newconfig['dispname'] = ''
 		newconfig['mailaddr'] = ''
+		newconfig['ppp'] = 10
 		# Save the default password (md5 hash of 'admin') in our new config
 		newpwd = hashlib.md5('admin'.encode('utf-8'))
 		newconfig['pwd'] = newpwd.hexdigest()
