@@ -152,7 +152,7 @@ def deleteTag(hashTag):
 def index():
 	# Check if admin logged in
 	login()
-	# Check if config file exists
+	# Check if config file exists (if application is already installed and configured)
 	try :
 		with open('config.json', 'r') as configFile :
 			config = json.load(configFile) # This will load config file to memory as config object
