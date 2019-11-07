@@ -186,10 +186,11 @@ input[type=text]:focus, input[type=password]:focus, input[type=email]:focus {
 	font-weight: normal;
 	font-size: 16px;
 	color: #444444;
-	margin-top: 20px;
+	margin-top: 10px;
 }
 
 .title {
+	padding-top: 10px;
 	display: block;
 }
 

@@ -31,13 +31,13 @@
 		<span class="text">گذرواژه ی فعلی :</span>
 		<input type="password" name="oldpwd" value="" required>
 		
-		<span class="text">گذرواژه ی جدید :</span>
+		<span class="text">گذرواژه ی جدید* :</span>
 		<input type="password" name="newpwd" value="" id="pwd1" onkeyup='check();'>
 		
 		<span class="text">گذرواژه ی جدید (تکرار):</span>
 		<input type="password" name="confirmpwd" value="" id="pwd2" onkeyup='check();'>
 		
-		<span class="text">نام نمایشی :</span>
+		<span class="text">نام نمایشی* :</span>
 		<input type="text" name="dispname" value="{{ config['dispname'] }}" required>
 		
 		<span class="text">پست الکترونیک :</span>
@@ -46,12 +46,13 @@
 		<span class="text">تعداد پست ها در هر صفحه :</span>
 		<input type="text" name="ppp" value="{{ config['ppp'] }}" onkeyup='check();' required>
 		
-		<span class="text">قالب نمایش تاریخ و زمان :</span>
+		<span class="text">قالب نمایش تاریخ و زمان* :</span>
 		<input type="text" id="format" name="dtformat" value="{{ config['dtformat'] }}" required>
 		
 		<button type="submit" class="bluebtn" id="submit" onclick='return check();'>ارسال</button>
 		
 		<div class="help">
+			<span class="title">* در صورت خالی بودن گذرواژه جدید از گذرواژه ی قبلی استفاده خواهد شد.</span>
 			<span class="title">* نام نمایشی فعلاً مورد استفاده قرار نمی گیرد.</span>
 			<span class="title">* واژه های قابل استفاده در قالب نمایش تاریخ و زمان :</span>
 			<span class="desc">A% : نام روز هفته (مانند: شنبه، یکشنبه، دوشنبه...)</span>
