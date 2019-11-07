@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>دسترسی غیرمجاز</title>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+		<link rel="stylesheet" href="{{ url_for('static', filename='errorpage.css') }}">
+	</head>
+	<body class="colorful">
+		<div class="whitegrad">
+			<div class="header">
+				<div class="headertext">
+					<a name="root" href="{{ request.url_root }}" class="headertext">
+					دسترسی غیرمجاز
+					</a>
+				</div>
+			</div>
+		</div>
+		
+		<div class="details">
+            <span class="text errorcode">401 - UNAUTHORIZED</span>
+            <br>
+            <span class="text errordesc">شما مجوز دسترسی به این صفحه را ندارید!</span>
+            <br><hr><br>
+            <span class="text">در صورتی که مدیر سیستم هستید
+            <a class="link" href="{{ request.url_root }}" target="_self">ابتدا به صفحه ی اصلی باز گردید</a>
+             و با وارد کردن گذرواژه وارد شوید.</span>
+        </div>
+	</body>
+</html>

@@ -158,8 +158,8 @@ def authentication_required(func):
 		if session['logged_in'] == False :
 			# Ask user to login first!
 			flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-			# Redirect to the main page with error code 401 'Unauthorized'
-			return redirect(url_for('index'), code=401)
+			# Render error page 401 and return error code 401 'Unauthorized'
+			return render_template('401.html'), 401
 		return func(**kwargs)
 	return authenticate
 
