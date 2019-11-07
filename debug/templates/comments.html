@@ -48,7 +48,7 @@
 				{% if admin %}
 				<a href="javascript:deletecomment({{comment['cmtid']}});" class="delete"><span class="far fa-trash-alt tooltip"><span class="tooltiptext">حذف نظر</span></span></a>
 				{% endif %}
-				<span class="date">{{comment['dispdate']}}</span>
+				<span class="date">{{comment['datetime']}}</span>
 			</div>
 			<p class="content">{{comment['content']}}{% if (comment['emailaddr']) and admin %}<br><br>پست الکترونیک : {{comment['emailaddr']}}{% endif %}</p>
 		</div>

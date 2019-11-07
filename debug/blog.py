@@ -29,9 +29,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db' # Database connectio
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Because we don't need it
 db = SQLAlchemy(app)
 
-# Persian months (We'll use it to generate 'dispdate')
-months = {1:'فروردین', 2:'اردیبهشت', 3:'خرداد', 4:'تیر', 5:'مرداد', 6:'شهریور', 7:'مهر', 8:'آبان', 9:'آذر', 10:'دی', 11:'بهمن', 12:'اسفند'}
-
 # Order Columns are currently not being used but we'll use them in the future!
 # Category Object (Categories Table)
 class dbcategory(db.Model):
@@ -50,18 +47,16 @@ class dbpost(db.Model):
 	category = db.Column('category', db.Integer, db.ForeignKey('dbcategory.catid'), nullable=False)	# Defining a foreign key
 	title = db.Column('title', db.String(32), nullable=True)					# Post Title
 	content = db.Column('content', db.String(512), nullable=False) 					# Post Content
-	cdatetime = db.Column('datetime', db.String(24), nullable=False)				# Post Date/Time
-	dispdate = db.Column('dispdate', db.String(24), nullable=False)					# Post Jalali Date/Time to display below each post!
+	pdatetime = db.Column('datetime', db.String(24), nullable=False)				# Post Date/Time
 	comments = db.Column('comments', db.Integer, nullable=False)					# Number of comments on each post
 	mediaaddr = db.Column('mediaaddr', db.String(256), nullable=True)				# Multimedia File (Image) Address
 	posts = db.relationship('dbcomment', backref=db.backref("dbcomment", uselist=False))		# Defining a foreign key (backref to pid in comments table!)
 	# Constructor
-	def __init__(self, title, content, cdatetime, dispdate, comments, category, mediaaddr):
+	def __init__(self, title, content, pdatetime, comments, category, mediaaddr):
 		self.title = title		# Post Title
 		self.content = content		# Post Content
 		self.category = category	# Post Category
-		self.cdatetime = cdatetime	# Post Date/Time
-		self.dispdate = dispdate	# Post Jalali Date/Time to display below each post!
+		self.pdatetime = pdatetime	# Post Date/Time
 		self.comments = comments	# Number of comments on each post
 		self.mediaaddr = mediaaddr	# Multimedia File (Image) Address
 	
@@ -69,19 +64,16 @@ class dbpost(db.Model):
 class dbcomment(db.Model):
 	cmtid = db.Column('commentid', db.Integer, primary_key = True, autoincrement=True)	# Comment ID (Primary Key)
 	pid = db.Column('postid', db.Integer, db.ForeignKey('dbpost.postid'), nullable=False)	# Post ID (Foreign Key)
-	title = db.Column('title', db.String(32), nullable=True)				# Comment Title
 	content = db.Column('content', db.String(256), nullable=False) 				# Comment Content
 	cdatetime = db.Column('datetime', db.String(20), nullable=False)			# Comment Date/Time
-	dispdate = db.Column('dispdate', db.String(24), nullable=False)				# Comment Jalali Date/Time to display above each comment!
 	name = db.Column('name', db.String(24), nullable=False) 				# Comment's Author's Name
 	website = db.Column('website', db.String(128), nullable=True) 				# Comment's Author's Website
 	emailaddr = db.Column('emailaddr', db.String(40), nullable=True) 			# Comment's Author's EMail Address
 	# Constructor
-	def __init__(self, pid, title, content, cdatetime, dispdate, name, website, emailaddr):
+	def __init__(self, pid, content, cdatetime, name, website, emailaddr):
 		self.pid = pid			# Post ID (Foreign Key)
 		self.content = content		# Comment Content
 		self.cdatetime = cdatetime	# Comment Date/Time
-		self.dispdate = dispdate	# Comment Jalali Date/Time to display above each comment!
 		self.name = name		# Comment Author's Name
 		self.website = website		# Comment Author's Website
 		self.emailaddr = emailaddr	# Comment Author's EMail Address
@@ -126,6 +118,26 @@ def prcText(rawText, url):
 	rawText = rawText.replace('\n', '<br>')
 	# Return the produced string to appear on the requested page
 	return Markup(rawText)
+	
+# This function will format date/time
+def formatDateTime(strDateTime, strFormat):
+	# Persian months
+	months = {1:'فروردین', 2:'اردیبهشت', 3:'خرداد', 4:'تیر', 5:'مرداد', 6:'شهریور', 7:'مهر', 8:'آبان', 9:'آذر', 10:'دی', 11:'بهمن', 12:'اسفند'}
+	# Persian days
+	days = {5:'شنبه', 6:'یکشنبه', 0:'دوشنبه', 1:'سه شنبه', 2:'چهارشنبه', 3:'پنج شنبه', 4:'جمعه'}
+
+	# Convert strDateTime to a date/time object
+	gdt = datetime.datetime.strptime(strDateTime, '%Y-%m-%d %H:%M:%S')
+	jdt = jdatetime.GregorianToJalali(gdt.year, gdt.month, gdt.day)
+	result = strFormat.replace('%Y', str(jdt.jyear))
+	result = result.replace('%m', str(jdt.jmonth))
+	result = result.replace('%B', months[jdt.jmonth])
+	result = result.replace('%d', str(jdt.jday))
+	result = result.replace('%A', days[gdt.weekday()])
+	result = result.replace('%H', str(gdt.hour))
+	result = result.replace('%M', str(gdt.minute))
+	result = result.replace('%S', str(gdt.second))
+	return result
 
 # After deleting or editing a post we'll call this function to delete or reduce the frequncy of the removed hashtags
 def deleteTag(hashTag):
@@ -243,6 +255,8 @@ def page():
 		config = json.load(configFile)
 		# Get ppp value from config object and save it in a variable (ppp means Posts Per Page) 
 		ppp = config['ppp']
+		# Get date/time format
+		dtformat = config['dtformat']
 	
 	# Limit results to the number of Posts Per Page
 	results = query.offset(pageNum * ppp).limit(ppp)
@@ -261,18 +275,18 @@ def page():
 	posts = []
 	
 	# We'll use this loop to run 'prcText' function on each post's content
-	# and replace all hashtags in each post with linked hashtags! 
+	# and replace all hashtags in each post with linked hashtags and format its date/time
 	for result in results :
 		post = {} # A single post (we'll assign its values below!)
 		
-		# This is why we created this loop
 		# We'll replace hashtags with linked hashtags using the 'prcText' function
 		post['content'] = prcText(result.__dict__['content'], request.script_root)
+		# And format date/time using 'formatDateTime' function
+		post['datetime'] = formatDateTime(result.__dict__['pdatetime'], dtformat)
 		# Rest is the same without any modification!
 		post['postid'] = result.__dict__['postid']
 		post['title'] = result.__dict__['title']
 		post['category'] = result.__dict__['category']
-		post['dispdate'] = result.__dict__['dispdate']
 		post['comments'] = result.__dict__['comments']
 		post['mediaaddr'] = result.__dict__['mediaaddr']
 		# Put this post in our results
@@ -299,11 +313,12 @@ def config():
 			# We'll make a new config object
 			newconfig = {}
 			# And assign new values to this new config object
-			newconfig['title'] = request.form.get('title')
-			newconfig['desc'] = request.form.get('desc')
-			newconfig['dispname'] = request.form.get('dispname')
-			newconfig['mailaddr'] = request.form.get('mailaddr')
+			newconfig['title'] = request.form.get('title', type=str)
+			newconfig['desc'] = request.form.get('desc', type=str)
+			newconfig['dispname'] = request.form.get('dispname', default='مدیر', type=str)
+			newconfig['mailaddr'] = request.form.get('mailaddr', type=str)
 			newconfig['ppp'] = request.form.get('ppp', default=10, type=int)
+			newconfig['dtformat'] = request.form.get('dtformat', default='%d %B %Y', type=str)
 			# valid range for ppp is [1,100] (ppp means Posts Per Page)
 			if (newconfig['ppp'] < 1 or newconfig['ppp'] > 100) : 
 				# If ppp value was out of its valid range then set its value to 10
@@ -361,11 +376,8 @@ def comments():
 		content = request.form.get('content')
 		postid = request.form.get('postid', type=int)
 		cdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-		jdate = jdatetime.datetime.now() # This will assign current Jalali Date to jdate object 
-		dispdate = str(jdate.day) + ' ' + months[jdate.month] + ' ' + str(jdate.year) # Replace the number of month with months's name
-		title = '' # This attribute is not being used yet! we may use it in the future
 		# Create a new comment with the data provided above
-		comment = dbcomment(postid, title, content, cdatetime, dispdate, name, website, mailaddr)
+		comment = dbcomment(postid, content, cdatetime, name, website, mailaddr)
 		# Increase the number of comments of the post which this comment belongs to
 		post.comments = post.comments + 1
 		# Add this new comment to the database
@@ -373,8 +385,31 @@ def comments():
 		
 		db.session.commit()
 	# Load all comments that belong to a specific post from the database
-	comments = dbcomment.query.filter(dbcomment.pid == postid).all()
+	results = dbcomment.query.filter(dbcomment.pid == postid).all()
 	
+	# Load config file to the memory as config object
+	with open('config.json', 'r') as configFile :
+		config = json.load(configFile)
+		# Get date/time format
+		dtformat = config['dtformat']
+	
+	# Array of our comments (results)
+	comments = []
+	
+	# We'll use this loop to run 'formatDateTime' function on each comment to format its date/time
+	for result in results :
+		comment = {} # A single comment (we'll assign its values below!)
+		
+		# And format date/time using 'formatDateTime' function
+		comment['datetime'] = formatDateTime(result.__dict__['cdatetime'], dtformat)
+		# Rest is the same without any modification!
+		comment['content'] = result.__dict__['content']
+		comment['cmtid'] = result.__dict__['cmtid']
+		comment['name'] = result.__dict__['name']
+		comment['website'] = result.__dict__['website']
+		comment['emailaddr'] = result.__dict__['emailaddr']
+		# Put this comment in our results
+		comments.append(comment)
 	return render_template("comments.html", comments = comments, postid = postid, admin=session['logged_in'])
 
 # This function handles removing comments 
@@ -470,15 +505,11 @@ def post():
 		# If postid is empty then it's a new post and user is not editing an existing post
 		else :
 			# Get the Date/Time
-			cdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			pdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 			# New posts don't have any comment when they're getting published!
 			comments = 0
-			# Get Jalali Date
-			jdate = jdatetime.datetime.now()
-			# Replace Jalali month number with Jalali month name
-			dispdate = str(jdate.day) + ' ' + months[jdate.month] + ' ' + str(jdate.year)
 			# Create a new post with the provided data
-			newpost = dbpost(title=title, content=content, cdatetime=cdatetime, dispdate=dispdate, comments=comments, category=category, mediaaddr=mediaaddr)
+			newpost = dbpost(title=title, content=content, pdatetime=pdatetime, comments=comments, category=category, mediaaddr=mediaaddr)
 			# Save this new post to database
 			db.session.add(newpost)
 		# Save changes to the database
@@ -509,7 +540,6 @@ def post():
 			db.session.commit()
 		# Return to index and let the user see the new post
 		return redirect(url_for('index'))
-	
 	return render_template("post.html", post=post, categories = categories, admin=session['logged_in'])
 	
 # This function Removes the post from the database and execute the 'deleteTag' function for its hashtags and remove its comments
@@ -757,9 +787,10 @@ def install():
 		# Assign empty values to our configurations
 		newconfig['title'] = ''
 		newconfig['desc'] = ''
-		newconfig['dispname'] = ''
+		newconfig['dispname'] = 'مدیر'
 		newconfig['mailaddr'] = ''
 		newconfig['ppp'] = 10
+		newconfig['dtformat'] = '%Y %B %d'
 		# Save the default password (md5 hash of 'admin') in our new config
 		newpwd = hashlib.md5('admin'.encode('utf-8'))
 		newconfig['pwd'] = newpwd.hexdigest()
