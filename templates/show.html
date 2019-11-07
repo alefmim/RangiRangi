@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>نمایش مطلب</title>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+		<link rel="stylesheet" href="{{ url_for('static', filename='show.css') }}">
+	</head>
+	<body class="colorful">
+		<div class="whitegrad">
+			<div class="header">
+				<div class="headertext">
+					<a name="root" href="{{ request.url_root }}" class="headertext">
+                    نمایش مطلب
+					</a>
+				</div>
+			</div>
+        </div>
+        <script>
+            function deletepost(id)
+		    {   
+		    	if (id < 1) return;
+            
+		    	if (!confirm('آیا از حذف مطلب مطمئن هستید؟')) return;
+            
+                var xhttp = new XMLHttpRequest();
+            
+		    	xhttp.onreadystatechange = function() {
+		    		if (this.readyState == 4 && this.status == 200)
+		    			window.location.href = '{{ request.url_root }}';
+		    		else if (this.readyState == 4 && this.status == 401)
+		    			alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
+		    	};
+		    	xhttp.open("GET", "{{ request.script_root }}/deletepost?id=" + id);
+		    	xhttp.send();
+		    }
+        </script>
+		<div class="post">
+            <span class="field">شماره پست :</span>
+			<span class="value">{{ post['postid'] }}</span>
+            <br>
+            <span class="field">تاریخ انتشار میلادی :</span>
+			<span class="value">{{ post['gdatetime'] }}</span>
+            <br>
+            <span class="field">تاریخ انتشار شمسی :</span>
+			<span class="value">{{ post['datetime'] }}</span>
+            <br>
+			<span class="field">دسته بندی مطلب :</span>
+			<span class="value">{{ category['name'] }}</span>
+			<br>
+			<span class="field">عنوان مطلب :</span>
+			<span class="value">{{ post['title'] }}</span>
+			<br>
+			<span class="field">آدرس محتوای چند رسانه ای :</span>
+            <span class="value">
+                {% if (post['mediaaddr']) %}
+                <br><a href="{{ post['mediaaddr'] }}" class="value">{{ post['mediaaddr'] }}</a>
+                {% else %}
+                ندارد
+                {% endif %}
+            </span>
+            <br>
+            <span class="field">محتوای چند رسانه ای :</span>
+            <span class="value">
+                    {% if (post['mediaaddr']) %}
+                    <br><img src="{{ post['mediaaddr'] }}" class="image">
+                    {% else %}
+                    ندارد
+                    {% endif %}
+                
+            </span>
+			<br>
+			<span class="field">محتوای متنی :</span><br>
+            <span class="value">{{ post['content'] }}</span>
+            <br>
+            <span class="postbuttons">
+                {% if admin %}
+                <span onclick="deletepost({{ post['postid'] }})" class="postbutton">
+                    <span class="far fa-trash-alt tooltip">
+                        <span class="tooltiptext">حذف مطلب</span>
+                    </span>
+                </span>
+                <a href="{{ request.script_root }}/post?id={{ post['postid'] }}" target="_self" class="postbutton">
+                    <span class="far fa-edit tooltip">
+                        <span class="tooltiptext">ویرایش مطلب</span>
+                    </span>
+                </a>
+                {% endif %}
+                {% block adminbuttons %}{% endblock %}
+                <span onclick="window.open('{{ request.script_root }}/share?postid={{ post['postid'] }}','comments','status=yes, scrollbars=yes, toolbar=no, menubar=no, location=no , width=700px, height=800px, top=150, left=150')" class="postbutton">
+                    <span class="far fa-share-square tooltip">
+                        <span class="tooltiptext">اشتراک گذاری</span>
+                    </span>
+                </span>
+                <span onclick="window.open('{{ request.script_root }}/comments?postid={{ post['postid'] }}','comments','status=yes, scrollbars=yes, toolbar=no, menubar=no, location=no , width=700px, height=800px, top=150, left=150')" class="postbutton">
+                    <span id="comments">{{ post['comments'] }}</span>
+                    <span class="far fa-comment tooltip">
+                        <span class="tooltiptext">نظرات</span>
+                    </span>
+                </span>
+            </span>
+        </div>
+        <footer>
+            <div id="home" class="btn btnText" onclick="window.location.href='{{ request.url_root }}';">
+                <span class="fas fa-chevron-left">
+                    <span class="btnTextBalloon">بازگشت به صفحه اصلی</span>
+                </span>
+            </div>	
+        </footer>
+	</body>
+</html>

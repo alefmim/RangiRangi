@@ -221,6 +221,7 @@
 			<i class="toolboxicon fas fa-folder"></i>دسته  ها
 		</div>
 		<div class="items">
+			{% if (categories) %}
 			{% for category in categories %}
 			{% if admin %}
 			<a href="javascript:removecategory({{category['catid']}})" class="action"><i class="toolboxicon fas fa-trash"></i></a>
@@ -228,6 +229,9 @@
 			{% endif %}
 			<a class="item" href="{{ request.script_root }}/?category={{category['catid']}}"><i class="toolboxicon fas fa-external-link-alt"></i>{{category['name']}}</a></a>
 			{% endfor %}
+			{% else %}
+			دسته ای یافت نشد!
+			{% endif %}
 			{% if admin %}
 			<a href="javascript:newcategory()" class="item"><i class="toolboxicon fas fa-plus"></i>افزودن</a>
 			{% endif %}
@@ -248,26 +252,38 @@
 		</div>
 		<div class="items">
 			<a class="item">کلیدواژه های محبوب</a>
+			{% if (favtags) %}
 			{% for tag in favtags %}
 			<a class="item" href="{{ request.script_root }}/?tag={{tag['keyword']}}"><i class="toolboxicon fas fa-hashtag"></i>{{tag['keyword']}}</a>
 			{% endfor %}
+			{% else %}
+			<a class="item" href="#" target="_self"><i class="toolboxicon fas fa-eye-slash"></i>کلیدواژه ای یافت نشد!</a>
+			{% endif %}
 			<a class="item">کلیدواژه های پرکاربرد</a>
+			{% if (frqtags) %}
 			{% for tag in frqtags %}
 			<a class="item" href="{{ request.script_root }}/?tag={{tag['keyword']}}"><i class="toolboxicon fas fa-hashtag"></i>{{tag['keyword']}}</a>
 			{% endfor %}
+			{% else %}
+			<a class="item" href="#" target="_self"><i class="toolboxicon fas fa-eye-slash"></i>کلیدواژه ای یافت نشد!</a>
+			{% endif %}
 		</div>
 		
 		<div class="collapsible">
 			<i class="toolboxicon fas fa-link"></i>پیوند ها
 		</div>
 		<div class="items">
+			{% if (links) %}
 			{% for link in links %}
 			{% if admin %}
 			<a href="javascript:removelink({{link['linkid']}})" class="action"><i class="toolboxicon fas fa-trash"></i></a>
 			<a href="javascript:editlink({{link['linkid']}}, '{{link['name']}}', '{{link['address']}}')" class="action"><i class="toolboxicon fas fa-pen"></i></a>
 			{% endif %}
-			<a class="item" href="{{link['address']}}" target="_blank"><i class="toolboxicon fas fa-external-link-alt"></i>{{link['name']}}</a></a>
+			<a class="item" href="{{link['address']}}" target="_blank"><i class="toolboxicon fas fa-external-link-alt"></i>{{link['name']}}</a>
 			{% endfor %}
+			{% else %}
+			<a class="item" href="#" target="_self"><i class="toolboxicon fas fa-eye-slash"></i>پیوندی یافت نشد!</a>
+			{% endif %}
 			{% if admin %}
 			<a href="javascript:newlink()" class="item"><i class="toolboxicon fas fa-plus"></i>افزودن</a>
 			{% endif %}

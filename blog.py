@@ -47,16 +47,16 @@ class dbpost(db.Model):
 	category = db.Column('category', db.Integer, db.ForeignKey('dbcategory.catid'), nullable=False)	# Defining a foreign key
 	title = db.Column('title', db.String(32), nullable=True)					# Post Title
 	content = db.Column('content', db.String(512), nullable=False) 					# Post Content
-	pdatetime = db.Column('datetime', db.String(24), nullable=False)				# Post Date/Time
+	gdatetime = db.Column('datetime', db.String(24), nullable=False)				# Post Date/Time
 	comments = db.Column('comments', db.Integer, nullable=False)					# Number of comments on each post
 	mediaaddr = db.Column('mediaaddr', db.String(256), nullable=True)				# Multimedia File (Image) Address
 	posts = db.relationship('dbcomment', backref=db.backref("dbcomment", uselist=False))		# Defining a foreign key (backref to pid in comments table!)
 	# Constructor
-	def __init__(self, title, content, pdatetime, comments, category, mediaaddr):
+	def __init__(self, title, content, gdatetime, comments, category, mediaaddr):
 		self.title = title		# Post Title
 		self.content = content		# Post Content
 		self.category = category	# Post Category
-		self.pdatetime = pdatetime	# Post Date/Time
+		self.gdatetime = gdatetime	# Post Date/Time
 		self.comments = comments	# Number of comments on each post
 		self.mediaaddr = mediaaddr	# Multimedia File (Image) Address
 	
@@ -65,15 +65,15 @@ class dbcomment(db.Model):
 	cmtid = db.Column('commentid', db.Integer, primary_key = True, autoincrement=True)	# Comment ID (Primary Key)
 	pid = db.Column('postid', db.Integer, db.ForeignKey('dbpost.postid'), nullable=False)	# Post ID (Foreign Key)
 	content = db.Column('content', db.String(256), nullable=False) 				# Comment Content
-	cdatetime = db.Column('datetime', db.String(20), nullable=False)			# Comment Date/Time
+	gdatetime = db.Column('datetime', db.String(20), nullable=False)			# Comment Date/Time
 	name = db.Column('name', db.String(24), nullable=False) 				# Comment's Author's Name
 	website = db.Column('website', db.String(128), nullable=True) 				# Comment's Author's Website
 	emailaddr = db.Column('emailaddr', db.String(40), nullable=True) 			# Comment's Author's EMail Address
 	# Constructor
-	def __init__(self, pid, content, cdatetime, name, website, emailaddr):
+	def __init__(self, pid, content, gdatetime, name, website, emailaddr):
 		self.pid = pid			# Post ID (Foreign Key)
 		self.content = content		# Comment Content
-		self.cdatetime = cdatetime	# Comment Date/Time
+		self.gdatetime = gdatetime	# Comment Date/Time
 		self.name = name		# Comment Author's Name
 		self.website = website		# Comment Author's Website
 		self.emailaddr = emailaddr	# Comment Author's EMail Address
@@ -214,9 +214,9 @@ def index():
 	categories = dbcategory.query.all()
 	# We'll show 4 most popular hashtags (favtags) and 4 most used hashtags (frqtags)
 	# Find 4 most popular hashtags and save it to 'favtags' array 
-	favtags = dbtag.query.order_by(dbtag.popularity.desc()).limit(4)
+	favtags = dbtag.query.order_by(dbtag.popularity.desc()).limit(4).all()
 	# Find 4 most used hashtags and save it to 'frqtags' array
-	frqtags = dbtag.query.order_by(dbtag.frequency.desc()).limit(4)
+	frqtags = dbtag.query.order_by(dbtag.frequency.desc()).limit(4).all()
 	# Find all links and save it to 'links' array
 	links = dblink.query.order_by(dblink.order).all()
 	# Render the page with the provided data!
@@ -283,7 +283,8 @@ def page():
 		# We'll replace hashtags with linked hashtags using the 'prcText' function
 		post['content'] = prcText(result.__dict__['content'], request.script_root)
 		# And format date/time using 'formatDateTime' function
-		post['datetime'] = formatDateTime(result.__dict__['pdatetime'], dtformat)
+		post['datetime'] = formatDateTime(result.__dict__['gdatetime'], dtformat)
+		post['gdatetime'] = result.__dict__['gdatetime']
 		# Rest is the same without any modification!
 		post['postid'] = result.__dict__['postid']
 		post['title'] = result.__dict__['title']
@@ -376,9 +377,9 @@ def comments():
 		website = request.form.get('website')
 		content = request.form.get('content')
 		postid = request.form.get('postid', type=int)
-		cdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		gdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		# Create a new comment with the data provided above
-		comment = dbcomment(postid, content, cdatetime, name, website, mailaddr)
+		comment = dbcomment(postid, content, gdatetime, name, website, mailaddr)
 		# Increase the number of comments of the post which this comment belongs to
 		post.comments = post.comments + 1
 		# Add this new comment to the database
@@ -402,7 +403,7 @@ def comments():
 		comment = {} # A single comment (we'll assign its values below!)
 		
 		# And format date/time using 'formatDateTime' function
-		comment['datetime'] = formatDateTime(result.__dict__['cdatetime'], dtformat)
+		comment['datetime'] = formatDateTime(result.__dict__['gdatetime'], dtformat)
 		# Rest is the same without any modification!
 		comment['content'] = result.__dict__['content']
 		comment['cmtid'] = result.__dict__['cmtid']
@@ -506,11 +507,11 @@ def post():
 		# If postid is empty then it's a new post and user is not editing an existing post
 		else :
 			# Get the Date/Time
-			pdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			gdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 			# New posts don't have any comment when they're getting published!
 			comments = 0
 			# Create a new post with the provided data
-			newpost = dbpost(title=title, content=content, pdatetime=pdatetime, comments=comments, category=category, mediaaddr=mediaaddr)
+			newpost = dbpost(title=title, content=content, gdatetime=gdatetime, comments=comments, category=category, mediaaddr=mediaaddr)
 			# Save this new post to database
 			db.session.add(newpost)
 		# Save changes to the database
@@ -578,6 +579,51 @@ def deletepost():
 		return ('', 200)
 	# Return "Failure!"
 	return ('', 400)
+
+# This function handles showing single posts
+@app.route("/show", methods=['GET'])
+@authentication_required
+def show():
+	# Get 'id' from the requested url, if it's empty we'll assign it '-1' 
+	id =  request.args.get('id', default = -1, type = int)
+	
+	# Check if it's not a bad request
+	if id < -1 :
+		# Return to main page and return status code 400 'Bad Request' if it's a bad request
+		return redirect(url_for('index'), code=400)
+	
+	# Find the post which user requested
+	result = dbpost.query.filter(dbpost.postid == id).first()
+	
+	# Check if the requested post exists
+	if result is None :
+		return render_template('400.html'), 400
+	
+	# Find its category
+	category = dbcategory.query.filter(dbcategory.catid == result.category).first()
+	
+	# Load config file to the memory as config object
+	with open('config.json', 'r') as configFile :
+		config = json.load(configFile)
+		# Get date/time format
+		dtformat = config['dtformat']	
+	
+	# Create an empty post! We'll use it to send data to the client
+	post = {}
+	
+	# Replace hashtags with linked hashtags!
+	post['content'] = prcText(result.content, request.script_root)
+	# Format date/time
+	post['datetime'] = formatDateTime(result.gdatetime, dtformat)
+	# Copy rest of the data
+	post['postid'] = result.__dict__['postid']
+	post['gdatetime'] = result.__dict__['gdatetime']
+	post['title'] = result.__dict__['title']
+	post['category'] = result.__dict__['category']
+	post['comments'] = result.__dict__['comments']
+	post['mediaaddr'] = result.__dict__['mediaaddr']
+	# Show the post which was requested by user
+	return render_template("show.html", post=post, category=category, admin=session['logged_in'])
 
 # This function handles creating new categories
 @app.route("/newcategory", methods=['GET'])

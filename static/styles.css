@@ -109,10 +109,6 @@ p {
 	text-decoration: none;
 }
 
-#comments, #likes {
-	margin-left: 4px;
-}
-
 footer { 
 	display: block;
 	color: #FFFFFF;
