@@ -137,6 +137,7 @@ def formatDateTime(strDateTime, strFormat):
 	result = result.replace('%H', str(gdt.hour))
 	result = result.replace('%M', str(gdt.minute))
 	result = result.replace('%S', str(gdt.second))
+	result = result.replace('%N', '')
 	return result
 
 # After deleting or editing a post we'll call this function to delete or reduce the frequncy of the removed hashtags
