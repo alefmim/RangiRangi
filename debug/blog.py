@@ -156,8 +156,6 @@ def authentication_required(func):
 			session['logged_in'] = False
 		# If 'logged_in' is False then user has no admin privileges
 		if session['logged_in'] == False :
-			# Ask user to login first!
-			flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
 			# Render error page 401 and return error code 401 'Unauthorized'
 			return render_template('401.html'), 401
 		return func(**kwargs)
