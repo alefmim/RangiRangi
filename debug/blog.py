@@ -173,9 +173,6 @@ def login_required(func):
 @app.route("/")
 @authentication_required
 def index():
-	# # If user didn't login yet then we'll save (logged_in = False) for his session!
-	# if not 'logged_in' in session :
-	# 	session['logged_in'] = False
 	# Check if config file exists (if application is already installed and configured)
 	try :
 		with open('config.json', 'r') as configFile :
@@ -339,9 +336,6 @@ def config():
 @app.route("/comments", methods=['POST', 'GET'])
 @authentication_required
 def comments():
-	# # If user didn't login yet then we'll save (logged_in = False) for his session!
-	# if not 'logged_in' in session :
-	# 	session['logged_in'] = False
 	# Get 'postid' from the request
 	postid = request.args.get('postid', default=-1, type=int)
 	# Check if it's not a bad request!
