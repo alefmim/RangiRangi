@@ -130,6 +130,10 @@ footer {
 	opacity: 0.8;
 }
 
+.footerlink {
+	color: #FFFFFF;
+}
+
 .timeline {
 	position: relative;
 	max-width: 1200px;
