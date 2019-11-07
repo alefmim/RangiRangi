@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # # # # #
-# RangiRangi v191030alpha
+# RangiRangi v191107alpha
 # A simple flask based Microblogging CMS written in Python
 # Coded by Amir Mohammad Anvari
 # Contact me at AmirMohammad@Programmer.Net
@@ -216,7 +216,7 @@ def index():
 	favtags = dbtag.query.order_by(dbtag.popularity.desc()).limit(4)
 	# Find 4 most used hashtags and save it to 'frqtags' array
 	frqtags = dbtag.query.order_by(dbtag.frequency.desc()).limit(4)
-	# Find all links and save it to 'links' array 
+	# Find all links and save it to 'links' array
 	links = dblink.query.order_by(dblink.order).all()
 	# Render the page with the provided data!
 	return render_template("index.html", config = config, categories = categories, favtags = favtags, frqtags = frqtags, links = links, admin=session['logged_in'])
