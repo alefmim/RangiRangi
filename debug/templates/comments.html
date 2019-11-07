@@ -29,6 +29,8 @@
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200)
 					window.location.href = window.location.href;
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
 			xhttp.open("GET", "{{ request.script_root }}/deletecomment?id=" + id);
 			xhttp.send();

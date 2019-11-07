@@ -154,19 +154,26 @@ def authentication_required(func):
 		# If user didn't login yet then we'll save (logged_in = False) for his session!
 		if not 'logged_in' in session :
 			session['logged_in'] = False
+		return func(**kwargs)
+	return authenticate
+
+def login_required(func):
+	@functools.wraps(func)
+	@authentication_required
+	def checkPrivileges(**kwargs):
 		# If 'logged_in' is False then user has no admin privileges
 		if session['logged_in'] == False :
 			# Render error page 401 and return error code 401 'Unauthorized'
 			return render_template('401.html'), 401
-		return func(**kwargs)
-	return authenticate
+	return checkPrivileges
 
 # This function handles our main page
 @app.route("/")
+@authentication_required
 def index():
-	# If user didn't login yet then we'll save (logged_in = False) for his session!
-	if not 'logged_in' in session :
-		session['logged_in'] = False
+	# # If user didn't login yet then we'll save (logged_in = False) for his session!
+	# if not 'logged_in' in session :
+	# 	session['logged_in'] = False
 	# Check if config file exists (if application is already installed and configured)
 	try :
 		with open('config.json', 'r') as configFile :
@@ -270,9 +277,9 @@ def page():
 
 # This function handles config page and configurations 
 @app.route("/config", methods=['POST', 'GET'])
-@authentication_required
+@login_required
 def config():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 
 	# Create a new config (we'll load data in it later!)
 	config = {}
@@ -330,6 +337,9 @@ def config():
 @app.route("/comments", methods=['POST', 'GET'])
 @authentication_required
 def comments():
+	# # If user didn't login yet then we'll save (logged_in = False) for his session!
+	# if not 'logged_in' in session :
+	# 	session['logged_in'] = False
 	# Get 'postid' from the request
 	postid = request.args.get('postid', default=-1, type=int)
 	# Check if it's not a bad request!
@@ -367,9 +377,9 @@ def comments():
 
 # This function handles removing comments 
 @app.route("/deletecomment", methods=['GET'])
-@authentication_required
+@login_required
 def deletecomment():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# Check if it's not a bad request
 	if 'id' in request.args :
@@ -411,9 +421,9 @@ def share():
 
 # This function handles 'Post' page which is used for saving new posts and editing existing posts in the database
 @app.route("/post", methods=['POST', 'GET'])
-@authentication_required
+@login_required
 def post():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If there's no category then we'll make one! (otherwise an error will occur!)
 	if dbcategory.query.count() == 0 :
@@ -521,9 +531,9 @@ def removepost(id):
 
 # This function handles requests for deleting posts
 @app.route("/deletepost", methods=['GET'])
-@authentication_required
+@login_required
 def deletepost():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
 	if 'id' in request.args :
@@ -538,9 +548,9 @@ def deletepost():
 
 # This function handles creating new categories
 @app.route("/newcategory", methods=['GET'])
-@authentication_required
+@login_required
 def newcategory():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
 	if 'name' in request.args :
@@ -563,9 +573,9 @@ def newcategory():
 
 # This function handles editing existing categories
 @app.route("/editcategory", methods=['GET'])
-@authentication_required
+@login_required
 def editcategory():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
 	if 'id' in request.args :
@@ -588,9 +598,9 @@ def editcategory():
 
 # This function handles removing the categories
 @app.route("/removecategory", methods=['GET'])
-@authentication_required
+@login_required
 def removecategory():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
 	if 'id' in request.args :
@@ -621,9 +631,9 @@ def removecategory():
 
 # This function handles adding new links to the link box
 @app.route("/addlink", methods=['GET'])
-@authentication_required
+@login_required
 def addlink():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
 	if 'address' in request.args :
@@ -645,9 +655,9 @@ def addlink():
 
 # This function handles editing existing links
 @app.route("/editlink", methods=['GET'])
-@authentication_required
+@login_required
 def editlink():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
 	if 'id' in request.args :
@@ -673,9 +683,9 @@ def editlink():
 
 # This function handles removing links
 @app.route("/removelink", methods=['GET'])
-@authentication_required
+@login_required
 def removelink():
-	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
 	if 'id' in request.args :

@@ -53,7 +53,9 @@
 			
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200)
-					location.reload(); 
+					location.reload();
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
 			xhttp.open("GET", "{{ request.script_root }}/deletepost?id=" + id);
 			xhttp.send();
@@ -72,6 +74,8 @@
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200)
 					location.reload(); 
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
 			xhttp.open("GET", "{{ request.script_root }}/addlink?name=" + name + "&address=" + encodeURIComponent(addr));
 			xhttp.send();
@@ -90,6 +94,8 @@
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200)
 					location.reload(); 
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
 			xhttp.open("GET", "{{ request.script_root }}/editlink?id=" + id  + "&name=" + name + "&address=" + encodeURIComponent(addr));
 			xhttp.send();
@@ -102,6 +108,8 @@
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200)
 					location.reload(); 
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
 			xhttp.open("GET", "{{ request.script_root }}/removelink?id=" + id);
 			xhttp.send();
@@ -116,6 +124,8 @@
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200)
 					location.reload(); 
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
 			xhttp.open("GET", "{{ request.script_root }}/newcategory?name=" + name);
 			xhttp.send();
@@ -130,6 +140,8 @@
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200)
 					location.reload(); 
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
 			xhttp.open("GET", "{{ request.script_root }}/editcategory?id=" + id + "&name=" + name);
 			xhttp.send();
@@ -142,6 +154,8 @@
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200)
 					location.reload();
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
 			xhttp.open("GET", "{{ request.script_root }}/removecategory?id=" + id);
 			xhttp.send();
