@@ -16,7 +16,7 @@ from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from random import randrange
-import datetime, re, os, jdatetime, json, hashlib, urllib.parse
+import datetime, re, os, jdatetime, json, hashlib, urllib.parse, functools
 
 # Initializations and Basic Configurations
 app = Flask(__name__)
@@ -147,11 +147,28 @@ def deleteTag(hashTag):
 	# Save changes to the database
 	db.session.commit()
 
+# We'll use this decorator before running any function that requires admin privilages to check if user is admin or not
+def authentication_required(func):
+	@functools.wraps(func)
+	def authenticate(**kwargs):
+		# If user didn't login yet then we'll save (logged_in = False) for his session!
+		if not 'logged_in' in session :
+			session['logged_in'] = False
+		# If 'logged_in' is False then user has no admin privileges
+		if session['logged_in'] == False :
+			# Ask user to login first!
+			flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
+			# Redirect to the main page with error code 401 'Unauthorized'
+			return redirect(url_for('index'), code=401)
+		return func(**kwargs)
+	return authenticate
+
 # This function handles our main page
 @app.route("/")
 def index():
-	# Check if admin logged in
-	login()
+	# If user didn't login yet then we'll save (logged_in = False) for his session!
+	if not 'logged_in' in session :
+		session['logged_in'] = False
 	# Check if config file exists (if application is already installed and configured)
 	try :
 		with open('config.json', 'r') as configFile :
@@ -255,15 +272,10 @@ def page():
 
 # This function handles config page and configurations 
 @app.route("/config", methods=['POST', 'GET'])
+@authentication_required
 def config():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Redirect to the main page
-		return redirect(url_for('index'))
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+
 	# Create a new config (we'll load data in it later!)
 	config = {}
 	# Load config file to the memory as config object
@@ -318,9 +330,8 @@ def config():
 
 # This function handles viewing and saving comments
 @app.route("/comments", methods=['POST', 'GET'])
+@authentication_required
 def comments():
-	# This function is necessary before running any code that's not intended to get executed by anyone except admin
-	login()
 	# Get 'postid' from the request
 	postid = request.args.get('postid', default=-1, type=int)
 	# Check if it's not a bad request!
@@ -358,15 +369,10 @@ def comments():
 
 # This function handles removing comments 
 @app.route("/deletecomment", methods=['GET'])
+@authentication_required
 def deletecomment():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Return status code 401 'UNAUTHORIZED'
-		return ('', 401)
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	
 	# Check if it's not a bad request
 	if 'id' in request.args :
 		# Get 'id' from the request
@@ -407,15 +413,9 @@ def share():
 
 # This function handles 'Post' page which is used for saving new posts and editing existing posts in the database
 @app.route("/post", methods=['POST', 'GET'])
+@authentication_required
 def post():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Redirect to the main page
-		return redirect(url_for('index'))
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
 	
 	# If there's no category then we'll make one! (otherwise an error will occur!)
 	if dbcategory.query.count() == 0 :
@@ -523,15 +523,10 @@ def removepost(id):
 
 # This function handles requests for deleting posts
 @app.route("/deletepost", methods=['GET'])
+@authentication_required
 def deletepost():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Redirect to the main page
-		return redirect(url_for('index'))
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	
 	# If it's not a bad request
 	if 'id' in request.args :
 		# Get postid
@@ -545,15 +540,10 @@ def deletepost():
 
 # This function handles creating new categories
 @app.route("/newcategory", methods=['GET'])
+@authentication_required
 def newcategory():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Redirect to the main page
-		return redirect(url_for('index'))
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	
 	# If it's not a bad request
 	if 'name' in request.args :
 		# Get 'name' from request
@@ -575,15 +565,10 @@ def newcategory():
 
 # This function handles editing existing categories
 @app.route("/editcategory", methods=['GET'])
+@authentication_required
 def editcategory():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Redirect to the main page
-		return redirect(url_for('index'))
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	
 	# If it's not a bad request
 	if 'id' in request.args :
 		# Get new category name from the request
@@ -605,15 +590,10 @@ def editcategory():
 
 # This function handles removing the categories
 @app.route("/removecategory", methods=['GET'])
+@authentication_required
 def removecategory():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Redirect to the main page
-		return redirect(url_for('index'))
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	
 	# If it's not a bad request
 	if 'id' in request.args :
 		# Get the category id from the request
@@ -643,15 +623,10 @@ def removecategory():
 
 # This function handles adding new links to the link box
 @app.route("/addlink", methods=['GET'])
+@authentication_required
 def addlink():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Redirect to the main page
-		return redirect(url_for('index'))
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	
 	# If it's not a bad request
 	if 'address' in request.args :
 		# Get the data from the request
@@ -672,15 +647,10 @@ def addlink():
 
 # This function handles editing existing links
 @app.route("/editlink", methods=['GET'])
+@authentication_required
 def editlink():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Redirect to the main page
-		return redirect(url_for('index'))
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	
 	# If it's not a bad request
 	if 'id' in request.args :
 		# Get the data from the request
@@ -705,15 +675,10 @@ def editlink():
 
 # This function handles removing links
 @app.route("/removelink", methods=['GET'])
+@authentication_required
 def removelink():
-	# This page requires admin privileges so we'll check if it's requested by admin or not
-	login()
-	# If 'logged_in' is False then user has no admin privileges
-	if session['logged_in'] == False :
-		# Ask user to login first!
-		flash('شما مجوز مورد نیاز برای دسترسی به این صفحه را ندارید!')
-		# Redirect to the main page
-		return redirect(url_for('index'))
+	# This page requires admin privileges so we'll check if it's requested by admin or not by using @authentication_required
+	
 	# If it's not a bad request
 	if 'id' in request.args :
 		# Get link's id from the request
@@ -733,9 +698,6 @@ def removelink():
 @limiter.limit("15/hour")		# 15	per hour
 @limiter.limit("45/day")		# 45	per day
 def login():
-	# If user didn't login yet then we'll save (logged_in = False) for his session!
-	if not 'logged_in' in session :
-		session['logged_in'] = False
 	# If there's any login attempt without providing password then we'll redirect it to the main page and ignore it!
 	if not 'pwd' in request.form :
 		return redirect(url_for('index'))
