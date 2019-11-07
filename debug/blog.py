@@ -147,24 +147,26 @@ def deleteTag(hashTag):
 	# Save changes to the database
 	db.session.commit()
 
-# We'll use this decorator before running any function that requires admin privilages to check if user is admin or not
+# We'll use this decorator before running any function that requires to check user privileges
 def authentication_required(func):
 	@functools.wraps(func)
-	def authenticate(**kwargs):
+	def authenticate(*args, **kwargs):
 		# If user didn't login yet then we'll save (logged_in = False) for his session!
 		if not 'logged_in' in session :
 			session['logged_in'] = False
-		return func(**kwargs)
+		return func(*args, **kwargs)
 	return authenticate
 
+# We'll use this decorator before running any function that requires admin privilages to check if user is admin or not
 def login_required(func):
 	@functools.wraps(func)
 	@authentication_required
-	def checkPrivileges(**kwargs):
+	def checkPrivileges(*args, **kwargs):
 		# If 'logged_in' is False then user has no admin privileges
 		if session['logged_in'] == False :
 			# Render error page 401 and return error code 401 'Unauthorized'
 			return render_template('401.html'), 401
+		return func(*args, **kwargs) 
 	return checkPrivileges
 
 # This function handles our main page
