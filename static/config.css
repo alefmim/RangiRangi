@@ -181,6 +181,23 @@ input[type=text]:focus, input[type=password]:focus, input[type=email]:focus {
 	border-color: transparent transparent transparent black;
 }
 
+.help {
+	font-family: Vazir, Tahoma, sans-serif;
+	font-weight: normal;
+	font-size: 16px;
+	color: #444444;
+	margin-top: 20px;
+}
+
+.title {
+	display: block;
+}
+
+.desc {
+	padding-right: 20px;
+	display: block;
+}
+
 #home {
 	position: fixed;
 	bottom: 24px;
