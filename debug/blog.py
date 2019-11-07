@@ -74,7 +74,7 @@ class dbcomment(db.Model):
 	cdatetime = db.Column('datetime', db.String(20), nullable=False)			# Comment Date/Time
 	dispdate = db.Column('dispdate', db.String(24), nullable=False)				# Comment Jalali Date/Time to display above each comment!
 	name = db.Column('name', db.String(24), nullable=False) 				# Comment's Author's Name
-	website = db.Column('website', db.String(24), nullable=True) 				# Comment's Author's Website
+	website = db.Column('website', db.String(128), nullable=True) 				# Comment's Author's Website
 	emailaddr = db.Column('emailaddr', db.String(40), nullable=True) 			# Comment's Author's EMail Address
 	# Constructor
 	def __init__(self, pid, title, content, cdatetime, dispdate, name, website, emailaddr):
@@ -164,10 +164,16 @@ def login_required(func):
 	def checkPrivileges(*args, **kwargs):
 		# If 'logged_in' is False then user has no admin privileges
 		if session['logged_in'] == False :
-			# Render error page 401 and return error code 401 'Unauthorized'
-			return render_template('401.html'), 401
+			# Render error page 403 and return error code 403 'Forbidden'
+			return render_template('403.html'), 403
 		return func(*args, **kwargs) 
 	return checkPrivileges
+
+# 404 error page
+@app.errorhandler(404)
+def error404(e):
+    # Render error page 404 and return error code 404 'Not Found'
+    return render_template('404.html'), 404
 
 # This function handles our main page
 @app.route("/")
