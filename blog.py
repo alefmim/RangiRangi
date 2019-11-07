@@ -7,7 +7,7 @@
 # Contact me at AmirMohammad@Programmer.Net
 # # # # # # # # #  #
 
-from flup.server.fcgi import WSGIServer
+#from flup.server.fcgi import WSGIServer
 from flask import Flask, render_template, request \
 , Response, Markup, redirect ,url_for, abort, escape \
 , session, flash
