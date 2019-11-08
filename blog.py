@@ -340,7 +340,7 @@ def config():
 					else :
 						# If admin didn't request to change the password then we'll use the old password in new config too
 						newconfig['pwd'] = config['pwd']
-				else : # If password was wrong!
+				else :  # If password was wrong!
 					# Save old configs in the config file
 					# We have to do this because we opened the config file with 'w' parameter which means erase the file's data and open it for output!
 					json.dump(config, configFile)
