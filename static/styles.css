@@ -75,12 +75,12 @@ p {
 }
 
 .image {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 100%;
-    max-height: 452px;
-    width: auto;
+    	display: block;
+   	margin-left: auto;
+   	margin-right: auto;
+   	max-width: 100%;
+   	max-height: 452px;
+   	width: auto;
 	height: auto;
 	padding-top: 10px;
 }
