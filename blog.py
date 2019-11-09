@@ -140,7 +140,7 @@ def formatDateTime(strDateTime, strFormat):
 	result = result.replace('%N', '')
 	return result
 
-# After deleting or editing a post we'll call this function to delete or reduce the frequncy of the removed hashtags
+# After deleting or editing a post we'll call this function to delete or reduce the frequncy of removed hashtags
 def deleteTag(hashTag):
 	# Find the hashtag in database using its name
 	tag = dbtag.query.filter(dbtag.keyword == hashTag)
@@ -197,7 +197,7 @@ def index():
 		with open('config.json', 'r') as configFile :
 			config = json.load(configFile) # This will load config file to memory as config object
 	except FileNotFoundError : # This exception means that our program is not installed and configured yet!
-		# So we'll call install() to make the config file and database file and redirect user to config page
+		# So we'll call install() to make the config and database files and redirect user to config page
 		return render_template("config.html", config=install()) 
 	# If someone looks for a specific hashtag we'll increase its popularity by 1 
 	# Get the hashtag from the request
@@ -226,7 +226,7 @@ def index():
 @app.route("/page", methods=['GET'])
 @limiter.limit("60/second")
 def page():
-	# Get the data from the request
+	# Get data from the request
 	pageNum =  request.args.get('page', default = 2, type = int)
 	search = request.args.get('search', default = '', type = str)
 	category = request.args.get('category', default = -1, type = int)
