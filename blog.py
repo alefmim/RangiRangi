@@ -251,7 +251,7 @@ def error404(e):
 @authentication_required
 def index():
 	'''
-	Renders our main page or Calls install() if blog is not configured yet
+	Renders the main page or Calls install() if blog is not configured yet
 	It also handles increasing the hashtags popularity if user clicks on a specific hashtag
 	and requests its page
 	'''
