@@ -111,7 +111,7 @@ def prcText(rawText: str, url: str) -> str:
 	'''
 	Replaces all hashtags in the 'rawText' with linked hashtags 
 	(Adds html <a> tag to all hashtags in the 'rawText' and links them to their page!)
-	for example : calling prcText('hello #dear user!', 'https://www.site.com/blog/') will return following string :
+	for example : calling prcText('hello #dear user!', 'https://www.site.com/blog/') will return the following string :
 	"hello <a href='https://www.site.com/blog/?tag=dear' class='hashtag'>#dear</a> user!"
 	
 	Parameters
