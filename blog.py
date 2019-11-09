@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
 # # # # #
-# RangiRangi v191107alpha
+# RangiRangi v191110alpha
 # A simple flask based Microblogging CMS written in Python
-# Coded by Amir Mohammad Anvari
+# Coded by AlefMim (github.com/alefmim)
 # Contact me at AmirMohammad@Programmer.Net
 # # # # # # # # #  #
 
@@ -27,6 +27,8 @@ limiter = Limiter(
 )
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db' # Database connection string
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Because we don't need it
+# assign a 32 bytes length random value to app.secret_key
+app.secret_key = os.urandom(32)
 db = SQLAlchemy(app)
 
 # Order Columns are currently not being used but we'll use them in the future!
@@ -37,7 +39,7 @@ class dbcategory(db.Model):
 	order = db.Column('order', db.Integer, nullable=False)					# Category Order
 	categories = db.relationship('dbpost', backref=db.backref("dbcategory", lazy=True)) 	# Defining a foreign key (backref to category in posts table!)
 	# Constructor
-	def __init__(self, name, order):
+	def __init__(self, name: str, order: int):
 		self.name = name	# Category Name
 		self.order = order 	# Category Order
 
@@ -52,7 +54,7 @@ class dbpost(db.Model):
 	mediaaddr = db.Column('mediaaddr', db.String(256), nullable=True)				# Multimedia File (Image) Address
 	posts = db.relationship('dbcomment', backref=db.backref("dbcomment", uselist=False))		# Defining a foreign key (backref to pid in comments table!)
 	# Constructor
-	def __init__(self, title, content, gdatetime, comments, category, mediaaddr):
+	def __init__(self, title: str, content: str, gdatetime: str, comments: int, category: int, mediaaddr: str):
 		self.title = title		# Post Title
 		self.content = content		# Post Content
 		self.category = category	# Post Category
@@ -70,7 +72,7 @@ class dbcomment(db.Model):
 	website = db.Column('website', db.String(128), nullable=True) 				# Comment's Author's Website
 	emailaddr = db.Column('emailaddr', db.String(40), nullable=True) 			# Comment's Author's EMail Address
 	# Constructor
-	def __init__(self, pid, content, gdatetime, name, website, emailaddr):
+	def __init__(self, pid: int, content: str, gdatetime: str, name: str, website: str, emailaddr: str):
 		self.pid = pid			# Post ID (Foreign Key)
 		self.content = content		# Comment Content
 		self.gdatetime = gdatetime	# Comment Date/Time
@@ -85,7 +87,7 @@ class dbtag(db.Model):
 	frequency = db.Column('frequency', db.Integer, nullable=False)			# Tag Frequency
 	popularity = db.Column('popularity', db.Integer, nullable=False)		# Tag Popularity
 	# Constructor
-	def __init__(self, keyword, frequency, popularity):
+	def __init__(self, keyword: str, frequency: int, popularity: int):
 		self.keyword = keyword		# Tag Keyword
 		self.frequency = frequency	# Tag Frequency
 		self.popularity = popularity	# Tag Popularity
@@ -97,7 +99,7 @@ class dblink(db.Model):
 	address = db.Column('address', db.String(256), nullable=False, unique=True)		# Link Address
 	order = db.Column('order', db.Integer, nullable=False)					# Link Order
 	# Constructor
-	def __init__(self, name, address, order):
+	def __init__(self, name: str, address: str, order: int):
 		self.name = name	# Link Name
 		self.address = address	# Link Address
 		self.order = order	# Link Order
@@ -105,7 +107,26 @@ class dblink(db.Model):
 
 # This function replaces all hashtags in 'rawText' with linked hashtags 
 # 'url' must only contain domain name and script path (send request.script_root as its value!)
-def prcText(rawText, url):
+def prcText(rawText: str, url: str) -> str:
+	'''
+	Replaces all hashtags in the 'rawText' with linked hashtags 
+	(Adds html <a> tag to all hashtags in 'rawText' and links them to their page!)
+	Example : calling prcText('hello #dear user!', 'https://www.site.com/blog/') will return following string :
+	"hello <a href='https://www.site.com/blog/?tag=dear' class='hashtag'>#dear</a> user!"
+	
+	Parameters
+	----------
+	rawText : str
+		The raw string (usually post content which is stored in database) which may contain some hashtags
+	url : str
+		Address of our script including domain name (for example : https://www.site.com/blog/)
+		Send request.script_root as its value if you don't know how to use it
+	
+	Returns
+	-------
+	str
+		a string containing 'rawText' content but hashtags are replaced with linked (<a href="hashtag page">) hashtags!
+	'''
 	# Find all hashtags using regex
 	hashTags = re.findall(r"#(\w+)", rawText)
 	# Replace each hashtag with a link to that hashtag
@@ -120,7 +141,22 @@ def prcText(rawText, url):
 	return Markup(rawText)
 	
 # This function will format date/time
-def formatDateTime(strDateTime, strFormat):
+def formatDateTime(strDateTime: str, strFormat: str) -> str:
+	'''
+	Formats the 'strDateTime' using the 'strFormat' value
+	
+	Parameters
+	----------
+	strDateTime : str
+		a string which must contain a Date/Time in '%Y-%m-%d %H:%M:%S' format
+	strFormat : str
+		a string which must contain a format string like '%Y-%m-%d %H:%M:%S'
+	
+	Returns
+	-------
+	str :
+		a string which contains a date/time equal to 'strDateTime' but formatted like 'strFormat'
+	'''
 	# Persian months
 	months = {1:'فروردین', 2:'اردیبهشت', 3:'خرداد', 4:'تیر', 5:'مرداد', 6:'شهریور', 7:'مهر', 8:'آبان', 9:'آذر', 10:'دی', 11:'بهمن', 12:'اسفند'}
 	# Persian days
@@ -141,7 +177,17 @@ def formatDateTime(strDateTime, strFormat):
 	return result
 
 # After deleting or editing a post we'll call this function to delete or reduce the frequncy of removed hashtags
-def deleteTag(hashTag):
+def deleteTag(hashTag: str):
+	'''
+	Checks a hashtag's frequency in the database And performs the following tasks:
+	If it's greater than 1 then decrease it by 1
+	Else if it's less or equal to 1 then remove the hashtag from the database
+	
+	Parameters
+	----------
+	hashtag : str
+		a string which must contain only a hashtag without # (for example : 'blog')
+	'''
 	# Find the hashtag in database using its name
 	tag = dbtag.query.filter(dbtag.keyword == hashTag)
 	# Check if no hashtag is found
@@ -162,6 +208,11 @@ def deleteTag(hashTag):
 
 # We'll use this decorator before running any function that requires to check user privileges
 def authentication_required(func):
+	'''
+	A decorator which is used before any function that requires to check user privileges
+	and check if user has admin privileges or not! if user doesn't have admin privileges
+	then we'll continue serving him as a user and not admin
+	'''
 	@functools.wraps(func)
 	def authenticate(*args, **kwargs):
 		# If user didn't login yet then we'll save (logged_in = False) for his session!
@@ -172,6 +223,11 @@ def authentication_required(func):
 
 # We'll use this decorator before running any function that requires admin privilages to check if user is admin or not
 def login_required(func):
+	'''
+	A decorator which is used before any function that requires admin privileges to get executed!
+	if user doesn't have admin privileges then we'll stop serving him and show him 403 error page
+	instead of executing the requested function!
+	'''
 	@functools.wraps(func)
 	@authentication_required
 	def checkPrivileges(*args, **kwargs):
@@ -185,13 +241,20 @@ def login_required(func):
 # 404 error page
 @app.errorhandler(404)
 def error404(e):
-    # Render error page 404 and return error code 404 'Not Found'
-    return render_template('404.html'), 404
+	'''
+	Renders our custom 404 error page and returns error code 404 'Not Found' to the client
+	'''
+	return render_template('404.html'), 404
 
 # This function handles our main page
 @app.route("/")
 @authentication_required
 def index():
+	'''
+	Renders our main page or Calls install() if blog is not configured yet
+	It also handles increasing the hashtags popularity if user clicks on a specific hashtag
+	and requests its page
+	'''
 	# Check if config file exists (if application is already installed and configured)
 	try :
 		with open('config.json', 'r') as configFile :
@@ -226,6 +289,9 @@ def index():
 @app.route("/page", methods=['GET'])
 @limiter.limit("60/second")
 def page():
+	'''
+	Finds the posts which is requested by user and generates the requested page 
+	'''
 	# Get data from the request
 	pageNum =  request.args.get('page', default = 2, type = int)
 	search = request.args.get('search', default = '', type = str)
@@ -300,6 +366,9 @@ def page():
 @app.route("/config", methods=['POST', 'GET'])
 @login_required
 def config():
+	'''
+	Renders the config page and stores new configs in the config file
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 
 	# Create a new config (we'll load data in it later!)
@@ -359,6 +428,9 @@ def config():
 @app.route("/comments", methods=['POST', 'GET'])
 @authentication_required
 def comments():
+	'''
+	Renders the comments page for a specific post and stores new comments in the database
+	'''
 	# Get 'postid' from the request
 	postid = request.args.get('postid', default=-1, type=int)
 	# Check if it's not a bad request!
@@ -418,6 +490,9 @@ def comments():
 @app.route("/deletecomment", methods=['GET'])
 @login_required
 def deletecomment():
+	'''
+	Removes a comment from the database
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# Check if it's not a bad request
@@ -445,6 +520,9 @@ def deletecomment():
 # This function handles 'Share' page
 @app.route("/share", methods=['GET'])
 def share():
+	'''
+	Renders the share page
+	'''
 	# Check if it's not a bad request
 	if 'postid' in request.args :
 		# Get 'id' from the request
@@ -462,6 +540,9 @@ def share():
 @app.route("/post", methods=['POST', 'GET'])
 @login_required
 def post():
+	'''
+	Renders the post page and stores new or edited posts in the database
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If there's no category then we'll make one! (otherwise an error will occur!)
@@ -487,7 +568,8 @@ def post():
 		# Get the data from the request
 		category = request.form.get('cat')
 		title = request.form.get('title')
-		content = request.form.get('content')
+		# We'll Markup.escape on content to escape possible html tags in the content
+		content = Markup.escape(request.form.get('content'))
 		mediaaddr = request.form.get('addr')
 		postid = request.form.get('id')
 		# If postid is not empty then user is editing an existing post
@@ -545,7 +627,15 @@ def post():
 	return render_template("post.html", post=post, categories = categories, admin=session['logged_in'])
 	
 # This function Removes the post from the database and execute the 'deleteTag' function for its hashtags and remove its comments
-def removepost(id):
+def removepost(id: int):
+	'''
+	Remove a single post from the database
+	
+	Parameters
+	----------
+	id : int
+		Post ID, We'll use this ID (Primary Key) to find the post on database 
+	'''
 	# Find the post in the database
 	post = dbpost.query.filter(dbpost.postid == id)
 	# Delete all the comments that belong to this specific post
@@ -567,6 +657,9 @@ def removepost(id):
 @app.route("/deletepost", methods=['GET'])
 @login_required
 def deletepost():
+	'''
+	Gets Post ID from the request and calls removepost(id) to remove that specific post from the database 
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
@@ -584,6 +677,9 @@ def deletepost():
 @app.route("/show", methods=['GET'])
 @authentication_required
 def show():
+	'''
+	Renders the show page which is used to show a single post and all its details!
+	'''
 	# Get 'id' from the requested url, if it's empty we'll assign it '-1' 
 	id =  request.args.get('id', default = -1, type = int)
 	
@@ -629,6 +725,9 @@ def show():
 @app.route("/newcategory", methods=['GET'])
 @login_required
 def newcategory():
+	'''
+	Creates a new category using the data sent by user
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
@@ -654,6 +753,9 @@ def newcategory():
 @app.route("/editcategory", methods=['GET'])
 @login_required
 def editcategory():
+	'''
+	Changes a category values to the values sent by user
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
@@ -679,6 +781,9 @@ def editcategory():
 @app.route("/removecategory", methods=['GET'])
 @login_required
 def removecategory():
+	'''
+	Removes a category from the database
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
@@ -712,6 +817,9 @@ def removecategory():
 @app.route("/addlink", methods=['GET'])
 @login_required
 def addlink():
+	'''
+	Creates a new link using the data sent by user
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
@@ -736,6 +844,9 @@ def addlink():
 @app.route("/editlink", methods=['GET'])
 @login_required
 def editlink():
+	'''
+	Changes a link values to the values sent by user
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
@@ -764,6 +875,9 @@ def editlink():
 @app.route("/removelink", methods=['GET'])
 @login_required
 def removelink():
+	'''
+	Removes a link from the database
+	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
@@ -785,6 +899,11 @@ def removelink():
 @limiter.limit("15/hour")		# 15	per hour
 @limiter.limit("45/day")		# 45	per day
 def login():
+	'''
+	Gets the password sent by user and compare it with the password stored in the config file
+	If they're the same then sets session['logged_in'] value to true which will grant user
+	admin privileges. (the password which is stored in the config file is hashed using the md5 algorithm!)
+	'''
 	# If there's any login attempt without providing password then we'll redirect it to the main page and ignore it!
 	if not 'pwd' in request.form :
 		return redirect(url_for('index'))
@@ -810,6 +929,9 @@ def login():
 # This function handles the logout process
 @app.route("/logout")
 def logout():
+	'''
+	Removes 'logged_in' from session which will revoke all admin privileges
+	'''
 	# Remove logged_in from the session
 	session.pop('logged_in', None)
 	# Return to the main page
@@ -817,6 +939,15 @@ def logout():
 
 # This function handles the installation process and creating the config file and the database
 def install():
+	'''
+	Calls db.create_all() to create the database and its tables
+	And creates a basic config and return it as result
+	
+	Returns
+	-------
+	dictionary
+		a Dictionary which contains the default config
+	'''
 	# Create the database file and its tables
 	db.create_all()
 	# Create a category (to prevent errors!)
@@ -850,11 +981,6 @@ def install():
 
 # If this module is the main program!
 if __name__ == '__main__':
-	# assign a 12 bytes length random value to app.secret_key
-	app.secret_key = os.urandom(12)
 	# Run the program (Only for development purposes!)
 	app.run(debug=True)
-	# Run the program (Uncomment the lines below on the deployment environment!)
-	#WSGIServer(app, bindAddress='/tmp/blog-fcgi.sock-0').run()
-	#WSGIServer(app).run()
 
