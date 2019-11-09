@@ -206,7 +206,7 @@ def deleteTag(hashTag: str):
 	# Save changes to the database
 	db.session.commit()
 
-# We'll use this decorator before running any function that requires to check user privileges
+# We'll use this decorator before any function that requires to check user privileges
 def authentication_required(func):
 	'''
 	A decorator which is used before any function that requires to check user privileges
@@ -221,7 +221,7 @@ def authentication_required(func):
 		return func(*args, **kwargs)
 	return authenticate
 
-# We'll use this decorator before running any function that requires admin privilages to check if user is admin or not
+# We'll use this decorator before any function that requires admin privilages to check if user is admin or not
 def login_required(func):
 	'''
 	A decorator which is used before any function that requires admin privileges to get executed!
