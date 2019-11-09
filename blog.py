@@ -144,6 +144,7 @@ def prcText(rawText: str, url: str) -> str:
 def formatDateTime(strDateTime: str, strFormat: str) -> str:
 	'''
 	Formats the 'strDateTime' using the 'strFormat' value
+	Also converts the gregorian Date/Time to jalali Date/Time 
 	
 	Parameters
 	----------
