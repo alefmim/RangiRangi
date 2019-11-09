@@ -110,8 +110,8 @@ class dblink(db.Model):
 def prcText(rawText: str, url: str) -> str:
 	'''
 	Replaces all hashtags in the 'rawText' with linked hashtags 
-	(Adds html <a> tag to all hashtags in 'rawText' and links them to their page!)
-	Example : calling prcText('hello #dear user!', 'https://www.site.com/blog/') will return following string :
+	(Adds html <a> tag to all hashtags in the 'rawText' and links them to their page!)
+	for example : calling prcText('hello #dear user!', 'https://www.site.com/blog/') will return following string :
 	"hello <a href='https://www.site.com/blog/?tag=dear' class='hashtag'>#dear</a> user!"
 	
 	Parameters
@@ -154,7 +154,7 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
 	
 	Returns
 	-------
-	str :
+	str
 		a string which contains a date/time equal to 'strDateTime' but formatted like 'strFormat'
 	'''
 	# Persian months
