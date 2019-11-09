@@ -195,7 +195,7 @@ def index():
 	# Check if config file exists (if application is already installed and configured)
 	try :
 		with open('config.json', 'r') as configFile :
-			config = json.load(configFile) # This will load config file to memory as config object
+			config = json.load(configFile) # This will load config file to the memory as config object
 	except FileNotFoundError : # This exception means that our program is not installed and configured yet!
 		# So we'll call install() to make the config and database files and redirect user to config page
 		return render_template("config.html", config=install()) 
@@ -259,7 +259,7 @@ def page():
 		# Get date/time format
 		dtformat = config['dtformat']
 	
-	# Limit results to the number of Posts Per Page
+	# Limit the results to the number of Posts Per Page
 	results = query.offset(pageNum * ppp).limit(ppp)
 	
 	# Send "END." if there's no more results to send with status code 200 which means the request was successful
@@ -275,14 +275,14 @@ def page():
 	# Array of our posts (results)
 	posts = []
 	
-	# We'll use this loop to run 'prcText' function on each post's content
+	# We'll use this loop to run the 'prcText' function on each post's content
 	# and replace all hashtags in each post with linked hashtags and format its date/time
 	for result in results :
 		post = {} # A single post (we'll assign its values below!)
 		
 		# We'll replace hashtags with linked hashtags using the 'prcText' function
 		post['content'] = prcText(result.__dict__['content'], request.script_root)
-		# And format date/time using 'formatDateTime' function
+		# And format date/time using the 'formatDateTime' function
 		post['datetime'] = formatDateTime(result.__dict__['gdatetime'], dtformat)
 		post['gdatetime'] = result.__dict__['gdatetime']
 		# Rest is the same without any modification!
@@ -398,11 +398,11 @@ def comments():
 	# Array of our comments (results)
 	comments = []
 	
-	# We'll use this loop to run 'formatDateTime' function on each comment to format its date/time
+	# We'll use this loop to run the 'formatDateTime' function on each comment to format its date/time
 	for result in results :
 		comment = {} # A single comment (we'll assign its values below!)
 		
-		# And format date/time using 'formatDateTime' function
+		# And format date/time using the 'formatDateTime' function
 		comment['datetime'] = formatDateTime(result.__dict__['gdatetime'], dtformat)
 		# Rest is the same without any modification!
 		comment['content'] = result.__dict__['content']
@@ -554,7 +554,7 @@ def removepost(id):
 	content = post.first().content
 	# And find all the hashtags in this content
 	hashTags = re.findall(r"#(\w+)", content)
-	# Execute 'deleteTag' function for all the hashtags found in the content
+	# Execute the 'deleteTag' function for all the hashtags found in the content
 	for hashTag in set(hashTags):
 		# remove the hashtag or reduce its frequency
 		deleteTag(hashTag)
@@ -573,7 +573,7 @@ def deletepost():
 	if 'id' in request.args :
 		# Get postid
 		id =  request.args.get('id', type = int)
-		# Call 'removepost' function to remove the post from the database
+		# Call the 'removepost' function to remove the post from the database
 		removepost(id)
 		# Return "Success!"
 		return ('', 200)
