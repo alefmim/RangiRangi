@@ -629,7 +629,7 @@ def post():
 # This function Removes the post from the database and execute the 'deleteTag' function for its hashtags and remove its comments
 def removepost(id: int):
 	'''
-	Remove a single post from the database
+	Removes a single post from the database
 	
 	Parameters
 	----------
