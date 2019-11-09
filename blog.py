@@ -225,7 +225,7 @@ def authentication_required(func):
 def login_required(func):
 	'''
 	A decorator which is used before any function that requires admin privileges to get executed!
-	if user doesn't have admin privileges then we'll stop serving him and show him 403 error page
+	if user doesn't have admin privileges then we'll stop serving them and show them 403 error page
 	instead of executing the requested function!
 	'''
 	@functools.wraps(func)
