@@ -289,6 +289,7 @@ def index():
 # This function sends the posts to the client
 @app.route("/page", methods=['GET'])
 @limiter.limit("60/second")
+@authentication_required
 def page():
 	'''
 	Finds the posts which is requested by user and generates the requested page 
