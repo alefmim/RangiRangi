@@ -8,15 +8,32 @@
 # # # # # # # # #  #
 
 #from flup.server.fcgi import WSGIServer
-from flask import Flask, render_template, request \
-, Response, Markup, redirect ,url_for, abort, escape \
-, session, flash
+from flask import (
+	Flask, 
+	render_template, 
+	request,
+	Response, 
+	Markup, 
+	redirect,
+	url_for, 
+	abort, 
+	escape,
+	session,
+	flash,
+)
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from random import randrange
-import datetime, re, os, jdatetime, json, hashlib, urllib.parse, functools
+import datetime
+import re
+import os
+import jdatetime
+import json
+import hashlib
+import urllib.parse
+import functools
 
 # Initializations and Basic Configurations
 app = Flask(__name__)
