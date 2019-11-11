@@ -45,7 +45,7 @@ limiter = Limiter(
 )
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db' # Database connection string
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Because we don't need it
-# assign a 32 bytes length random value to app.secret_key
+# Assign a 32 bytes length random value to app.secret_key
 app.secret_key = os.urandom(32)
 db = SQLAlchemy(app)
 
