@@ -231,6 +231,7 @@ def authentication_required(func):
 	A decorator which is used before any function that requires to check user privileges
 	and check if user has admin privileges or not! if user doesn't have admin privileges
 	then we'll continue serving them as a user and not admin
+	Use this decorator before any function that requires to check session['logged_in'] value.
 	'''
 	@functools.wraps(func)
 	def authenticate(*args, **kwargs):
