@@ -5,7 +5,7 @@
 # A simple flask based Microblogging CMS written in Python
 # Coded by AlefMim (github.com/alefmim)
 # Contact me at AmirMohammad@Programmer.Net
-# # # # # # # # #  #
+# # # # # # # # # #
 
 import os
 import re
