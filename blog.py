@@ -7,7 +7,15 @@
 # Contact me at AmirMohammad@Programmer.Net
 # # # # # # # # #  #
 
-#from flup.server.fcgi import WSGIServer
+import os
+import re
+import datetime
+import jdatetime
+import json
+import hashlib
+import urllib.parse
+import functools
+
 from flask import (
 	Flask, 
 	render_template, 
@@ -26,14 +34,7 @@ from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from random import randrange
-import datetime
-import re
-import os
-import jdatetime
-import json
-import hashlib
-import urllib.parse
-import functools
+#from flup.server.fcgi import WSGIServer
 
 # Initializations and Basic Configurations
 app = Flask(__name__)
