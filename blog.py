@@ -680,7 +680,7 @@ def deletepost():
 @authentication_required
 def show():
 	'''
-	Renders the show page which is used to show a single post and all its details!
+	Renders the show page which is used to show a single post and its details!
 	'''
 	# Get 'id' from the requested url, if it's empty we'll assign it '-1' 
 	id =  request.args.get('id', default = -1, type = int)
