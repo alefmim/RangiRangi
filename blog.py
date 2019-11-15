@@ -34,7 +34,7 @@ from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from random import randrange
-#from flup.server.fcgi import WSGIServer
+from werkzeug.contrib.fixers import ProxyFix
 
 # Initializations and Basic Configurations
 app = Flask(__name__)
@@ -47,6 +47,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db' # Database connectio
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Because we don't need it
 # Assign a 32 bytes length random value to app.secret_key
 app.secret_key = os.urandom(32)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 db = SQLAlchemy(app)
 
 # Order Columns are currently not being used but we'll use them in the future!
