@@ -228,7 +228,7 @@
 			<a href="javascript:removecategory({{category['catid']}})" class="action"><i class="toolboxicon fas fa-trash"></i></a>
 			<a href="javascript:editcategory({{category['catid']}}, '{{category['name']}}')" class="action"><i class="toolboxicon fas fa-pen"></i></a>
 			{% endif %}
-			<a class="item" href="{{ request.script_root }}/?category={{category['catid']}}"><i class="toolboxicon fas fa-external-link-alt"></i>{{category['name']}}</a></a>
+			<a class="item" href="{{ request.script_root }}/?category={{category['catid']}}"><i class="toolboxicon fas fa-external-link-alt"></i>{{category['name']}}</a>
 			{% endfor %}
 			{% else %}
 			دسته ای یافت نشد!
