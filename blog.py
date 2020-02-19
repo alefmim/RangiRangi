@@ -149,6 +149,7 @@ def tr(text: str) -> str:
 		return text
 	# Return mapped string to 'text' in the translations.json file
 	try :
+		# Return translation if it exists or return the given string if there's no translation!
 		return translate[text] if translate[text] else text
 	except KeyError : # This exception means there's no match for given string
 		# So We'll return the given persian/farsi text
