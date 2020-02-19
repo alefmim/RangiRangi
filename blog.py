@@ -124,7 +124,7 @@ class dblink(db.Model):
 		self.order = order	# Link Order
 
 
-# This function will look for translation of given string in translations.json file
+# This function will look for translation of the given string in translations.json file
 def tr(text: str) -> str:
 	''' Looks for translation of 'text' in translations.json file
 	
@@ -147,7 +147,7 @@ def tr(text: str) -> str:
 	except (FileNotFoundError, ValueError) : # This exception means there's no translations.json file
 		# So We'll return the given persian/farsi text
 		return text
-	# Return mapped string to 'text' in translations.json file
+	# Return mapped string to 'text' in the translations.json file
 	try :
 		return translate[text] if translate[text] else text
 	except KeyError : # This exception means there's no match for given string
