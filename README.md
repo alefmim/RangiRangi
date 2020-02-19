@@ -62,15 +62,15 @@ A simple flask based microblogging cms written in python
 pip3 install Flask Flask-SQLAlchemy Flask-Limiter Werkzeug urllib3 requests SQLAlchemy jdatetime 
 ```
 
-...
+*به زودی آموزش رو کامل می کنم...*
 
 ### لینوکس
 
-...
+*به زودی آموزش رو کامل می کنم...*
 
 ### فری بی اس دی
 
-...
+*به زودی آموزش رو کامل می کنم...*
 
 ---
 
