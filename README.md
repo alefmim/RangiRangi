@@ -110,6 +110,6 @@ pip3 install Flask Flask-SQLAlchemy Flask-Limiter Werkzeug urllib3 requests SQLA
 
 # ارتباط با برنامه نویس رنگی رنگی
 
-برای ارتباط با من می تونید از این ایمیل استفاده کنید : mralefmim@gmail.com
+برای ارتباط با برنامه نویس رنگی رنگی می تونید از این ایمیل استفاده کنید : mralefmim@gmail.com
 
 </div>
