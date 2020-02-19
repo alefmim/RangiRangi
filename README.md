@@ -1,9 +1,10 @@
-<div dir="rtl">
+
 # RangiRangi
 
 A simple flask based microblogging cms written in python
 
 ---
+<div dir="rtl">
 
 # رنگی رنگی
 
