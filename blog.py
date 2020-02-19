@@ -219,8 +219,8 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
 	# This is where we keep the result!
 	result = ''
 	
-	days = {5:tr('شنبه'), 6:tr('یکشنبه'), 0:tr('دوشنبه'), 1:tr('سه شنبه') \
-			, 2:tr('چهارشنبه'), 3:tr('پنج شنبه'), 4:tr('جمعه')}
+	days = {0:tr('Monday'), 1:tr('Tuesday') , 2:tr('Wednesday') \
+		, 3:tr('Thursday'), 4:tr('Friday'), 5:tr('Saturday'), 6:tr('Sunday')}
 	# Convert strDateTime to a date/time object
 	gdt = datetime.datetime.strptime(strDateTime, '%Y-%m-%d %H:%M:%S')
 	jdt = jdatetime.GregorianToJalali(gdt.year, gdt.month, gdt.day)
@@ -228,9 +228,9 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
 	if config['calendar'] == 'Jalali' : # If Jalali Calendar is enabled!
 		# We'll use the Jalali Calendar
 		# Jalali months
-		jmonths = {1:tr('فروردین'), 2:tr('اردیبهشت'), 3:tr('خرداد') \
-			, 4:tr('تیر'), 5:tr('مرداد'), 6:tr('شهریور'), 7:tr('مهر') \
-			, 8:tr('آبان'), 9:tr('آذر'), 10:tr('دی'), 11:tr('بهمن'), 12:tr('اسفند')}
+		jmonths = {1:tr('Farvardin'), 2:tr('Ordibehesht'), 3:tr('Khordad') \
+			, 4:tr('Tir'), 5:tr('Mordad'), 6:tr('Shahrivar'), 7:tr('Mehr') \
+			, 8:tr('Aban'), 9:tr('Azar'), 10:tr('Dey'), 11:tr('Bahman'), 12:tr('Esfand')}
 		
 		result = strFormat.replace('%Y', str(jdt.jyear))
 		result = result.replace('%m', str(jdt.jmonth))
@@ -470,7 +470,7 @@ def config():
 			# And assign new values to this new config object
 			newconfig['title'] = request.form.get('title', type=str)
 			newconfig['desc'] = request.form.get('desc', type=str)
-			newconfig['dispname'] = request.form.get('dispname', default='مدیر', type=str)
+			newconfig['dispname'] = request.form.get('dispname', default=tr('Admin'), type=str)
 			newconfig['mailaddr'] = request.form.get('mailaddr', type=str)
 			newconfig['ppp'] = request.form.get('ppp', default=10, type=int)
 			newconfig['dtformat'] = request.form.get('dtformat', default='%d %B %Y', type=str)
@@ -499,7 +499,7 @@ def config():
 					# We have to do this because we opened the config file with 'w' parameter which means erase the file's data and open it for output!
 					json.dump(config, configFile)
 					# Ask user to enter the password again
-					flash(tr('خطا! گذرواژه صحیح نیست، لطفاً دوباره تلاش کنید.'))
+					flash(tr('Error! You have entered the wrong password, Please try again.'))
 					# Fill the page with old configs
 					return render_template("config.html", config=config)
 			# If everything goes well, we'll save new config to the config file
@@ -632,7 +632,7 @@ def post():
 	
 	# If there's no category then we'll make one! (otherwise an error will occur!)
 	if dbcategory.query.count() == 0 :
-		category = dbcategory(tr('متفرقه'), 0)
+		category = dbcategory(tr('Other'), 0)
 		db.session.add(category)
 		# Save changes to the database
 		db.session.commit()
@@ -889,7 +889,7 @@ def removecategory():
 			removepost(post.postid)
 		# If there's no category in database we'll make one! (to prevent errors!)
 		if dbcategory.query.count() == 0 :
-			category = dbcategory(tr('متفرقه'), 0)
+			category = dbcategory(tr('Other'), 0)
 			db.session.add(category)
 		# Save changes to the database
 		db.session.commit()
@@ -1007,7 +1007,7 @@ def login():
 		# If the password is wrong
 		elif 'pwd' in request.form :
 			# Ask user to enter the password again
-			flash(tr('خطا! گذرواژه صحیح نیست، لطفاً دوباره تلاش کنید.'))
+			flash(tr('Error! You have entered the wrong password, Please try again.'))
 	# Return to the main page
 	return redirect(url_for('index'))
 
@@ -1037,7 +1037,7 @@ def install():
 	db.create_all()
 	# Create a category (to prevent errors!)
 	if dbcategory.query.count() == 0 :
-		category = dbcategory(tr('متفرقه', 0))
+		category = dbcategory(tr('Other', 0))
 		db.session.add(category)
 		# Save changes to the database
 		db.session.commit()
@@ -1050,7 +1050,7 @@ def install():
 		# Assign empty values to our configurations
 		newconfig['title'] = ''
 		newconfig['desc'] = ''
-		newconfig['dispname'] = tr('مدیر')
+		newconfig['dispname'] = tr('Admin')
 		newconfig['mailaddr'] = ''
 		newconfig['ppp'] = 10
 		newconfig['dtformat'] = '%Y %B %d'
@@ -1061,7 +1061,7 @@ def install():
 		# Create a config file using our new config
 		json.dump(newconfig, configFile)
 		# Give user admin's password!
-		flash(tr('گذرواژه') + ' :\n\nadmin')
+		flash(tr('Password') + ' :\n\nadmin')
 		# Return this new config object so we can use it to fill the config page fields
 		return newconfig
 
