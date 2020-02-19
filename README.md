@@ -63,6 +63,14 @@ pip3 install Flask Flask-SQLAlchemy Flask-Limiter Werkzeug urllib3 requests SQLA
 
 ...
 
+### لینوکس
+
+...
+
+### فری بی اس دی
+
+...
+
 ---
 
 # توسعه رنگی رنگی
