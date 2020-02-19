@@ -34,7 +34,7 @@ from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from random import randrange
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Initializations and Basic Configurations
 app = Flask(__name__)
@@ -124,6 +124,36 @@ class dblink(db.Model):
 		self.order = order	# Link Order
 
 
+# This function will look for translation of given string in translations.json file
+def tr(text: str) -> str:
+	''' Looks for translation of 'text' in translations.json file
+	
+	Parameters
+	----------
+	text : str
+		Persian/Farsi string to lookup in translations.json file
+	
+	Returns
+	-------
+	str
+		mapped string to 'text' in translations.json file
+	'''
+	# This will prevent some errors!
+	translate = {}
+	# Open translations.json file
+	try :
+		with open('translations.json', 'r', encoding='utf-8') as translations :
+			translate = json.load(translations) # Load translations.json file to memory as translate object
+	except (FileNotFoundError, ValueError) : # This exception means there's no translations.json file
+		# So We'll return the given persian/farsi text
+		return text
+	# Return mapped string to 'text' in translations.json file
+	try :
+		return translate[text] if translate[text] else text
+	except KeyError : # This exception means there's no match for given string
+		# So We'll return the given persian/farsi text
+		return text
+
 # This function replaces all hashtags in 'rawText' with linked hashtags 
 # 'url' must only contain domain name and script path (send request.script_root as its value!)
 def prcText(rawText: str, url: str) -> str:
@@ -177,23 +207,54 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
 	str
 		a string which contains a date/time equal to 'strDateTime' but formatted like 'strFormat'
 	'''
-	# Persian months
-	months = {1:'فروردین', 2:'اردیبهشت', 3:'خرداد', 4:'تیر', 5:'مرداد', 6:'شهریور', 7:'مهر', 8:'آبان', 9:'آذر', 10:'دی', 11:'بهمن', 12:'اسفند'}
-	# Persian days
-	days = {5:'شنبه', 6:'یکشنبه', 0:'دوشنبه', 1:'سه شنبه', 2:'چهارشنبه', 3:'پنج شنبه', 4:'جمعه'}
+	# Check if Jalali Calendar is enabled or not
+	#We'll try opening the config file
+	try :
+		with open('config.json', 'r') as configFile :
+			config = json.load(configFile) # This will load config file to the memory as config object
+	except FileNotFoundError : # This exception means that our program is not installed and configured yet!
+		# So we'll call install() to make the config and database files and redirect user to config page
+		return render_template("config.html", config=install()) 
+	# This is where we keep the result!
+	result = ''
 	
+	days = {5:tr('شنبه'), 6:tr('یکشنبه'), 0:tr('دوشنبه'), 1:tr('سه شنبه') \
+			, 2:tr('چهارشنبه'), 3:tr('پنج شنبه'), 4:tr('جمعه')}
 	# Convert strDateTime to a date/time object
 	gdt = datetime.datetime.strptime(strDateTime, '%Y-%m-%d %H:%M:%S')
 	jdt = jdatetime.GregorianToJalali(gdt.year, gdt.month, gdt.day)
-	result = strFormat.replace('%Y', str(jdt.jyear))
-	result = result.replace('%m', str(jdt.jmonth))
-	result = result.replace('%B', months[jdt.jmonth])
-	result = result.replace('%d', str(jdt.jday))
+	
+	if config['calendar'] == 'Jalali' : # If Jalali Calendar is enabled!
+		# We'll use the Jalali Calendar
+		# Jalali months
+		jmonths = {1:tr('فروردین'), 2:tr('اردیبهشت'), 3:tr('خرداد') \
+			, 4:tr('تیر'), 5:tr('مرداد'), 6:tr('شهریور'), 7:tr('مهر') \
+			, 8:tr('آبان'), 9:tr('آذر'), 10:tr('دی'), 11:tr('بهمن'), 12:tr('اسفند')}
+		
+		result = strFormat.replace('%Y', str(jdt.jyear))
+		result = result.replace('%m', str(jdt.jmonth))
+		result = result.replace('%B', jmonths[jdt.jmonth])
+		result = result.replace('%d', str(jdt.jday))\
+		
+	elif config['calendar'] == 'Gregorian' : # If Jalali Calendar is disabled
+		# We'll use the Gregorian Calendar
+		# Gregorian months
+		gmonths = {1:tr('January'), 2:tr('February'), 3:tr('March') \
+			, 4:tr('April'), 5:tr('May'), 6:tr('June'), 7:tr('July') \
+			, 8:tr('August'), 9:tr('September'), 10:tr('October') \
+			, 11:tr('November'), 12:tr('December')}
+		
+		result = strFormat.replace('%Y', str(gdt.year))
+		result = result.replace('%m', str(gdt.month))
+		result = result.replace('%B', gmonths[gdt.month])
+		result = result.replace('%d', str(gdt.day))
+	
 	result = result.replace('%A', days[gdt.weekday()])
 	result = result.replace('%H', str(gdt.hour))
 	result = result.replace('%M', str(gdt.minute))
 	result = result.replace('%S', str(gdt.second))
 	result = result.replace('%N', '')
+	
 	return result
 
 # After deleting or editing a post we'll call this function to delete or reduce the frequncy of removed hashtags
@@ -412,6 +473,7 @@ def config():
 			newconfig['mailaddr'] = request.form.get('mailaddr', type=str)
 			newconfig['ppp'] = request.form.get('ppp', default=10, type=int)
 			newconfig['dtformat'] = request.form.get('dtformat', default='%d %B %Y', type=str)
+			newconfig['calendar'] = request.form.get('calendar', default='Jalali', type=str)
 			# valid range for ppp is [1,100] (ppp means Posts Per Page)
 			if (newconfig['ppp'] < 1 or newconfig['ppp'] > 100) : 
 				# If ppp value was out of its valid range then set its value to 10
@@ -436,7 +498,7 @@ def config():
 					# We have to do this because we opened the config file with 'w' parameter which means erase the file's data and open it for output!
 					json.dump(config, configFile)
 					# Ask user to enter the password again
-					flash('خطا! گذرواژه صحیح نیست، لطفاً دوباره تلاش کنید.')
+					flash(tr('خطا! گذرواژه صحیح نیست، لطفاً دوباره تلاش کنید.'))
 					# Fill the page with old configs
 					return render_template("config.html", config=config)
 			# If everything goes well, we'll save new config to the config file
@@ -569,7 +631,7 @@ def post():
 	
 	# If there's no category then we'll make one! (otherwise an error will occur!)
 	if dbcategory.query.count() == 0 :
-		category = dbcategory('متفرقه', 0)
+		category = dbcategory(tr('متفرقه'), 0)
 		db.session.add(category)
 		# Save changes to the database
 		db.session.commit()
@@ -826,7 +888,7 @@ def removecategory():
 			removepost(post.postid)
 		# If there's no category in database we'll make one! (to prevent errors!)
 		if dbcategory.query.count() == 0 :
-			category = dbcategory('متفرقه', 0)
+			category = dbcategory(tr('متفرقه'), 0)
 			db.session.add(category)
 		# Save changes to the database
 		db.session.commit()
@@ -944,7 +1006,7 @@ def login():
 		# If the password is wrong
 		elif 'pwd' in request.form :
 			# Ask user to enter the password again
-			flash('خطا! گذرواژه صحیح نیست، لطفاً دوباره تلاش کنید.')
+			flash(tr('خطا! گذرواژه صحیح نیست، لطفاً دوباره تلاش کنید.'))
 	# Return to the main page
 	return redirect(url_for('index'))
 
@@ -974,7 +1036,7 @@ def install():
 	db.create_all()
 	# Create a category (to prevent errors!)
 	if dbcategory.query.count() == 0 :
-		category = dbcategory('متفرقه', 0)
+		category = dbcategory(tr('متفرقه', 0))
 		db.session.add(category)
 		# Save changes to the database
 		db.session.commit()
@@ -987,17 +1049,18 @@ def install():
 		# Assign empty values to our configurations
 		newconfig['title'] = ''
 		newconfig['desc'] = ''
-		newconfig['dispname'] = 'مدیر'
+		newconfig['dispname'] = tr('مدیر')
 		newconfig['mailaddr'] = ''
 		newconfig['ppp'] = 10
 		newconfig['dtformat'] = '%Y %B %d'
+		newconfig['calendar'] = 'Jalali'
 		# Save the default password (md5 hash of 'admin') in our new config
 		newpwd = hashlib.md5('admin'.encode('utf-8'))
 		newconfig['pwd'] = newpwd.hexdigest()
 		# Create a config file using our new config
 		json.dump(newconfig, configFile)
 		# Give user admin's password!
-		flash('گذرواژه :\n\nadmin')
+		flash(tr('گذرواژه') + ' :\n\nadmin')
 		# Return this new config object so we can use it to fill the config page fields
 		return newconfig
 

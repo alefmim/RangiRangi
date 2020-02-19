@@ -49,6 +49,12 @@
 		<span class="text">قالب نمایش تاریخ و زمان* :</span>
 		<input type="text" id="format" name="dtformat" value="{{ config['dtformat'] }}" required>
 		
+		<span class="text">تقویم : </span>
+		<select name="calendar">
+			<option value="Gregorian" {% if config['calendar'] == 'Gregorian' %} selected {% endif %}>میلادی</option>
+			<option value="Jalali" {% if config['calendar'] == 'Jalali' %} selected {% endif %}>جلالی</option>
+		</select> 
+		
 		<button type="submit" class="bluebtn" id="submit" onclick='return check();'>ارسال</button>
 		
 		<div class="help">

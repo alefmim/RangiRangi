@@ -71,7 +71,7 @@ p {
 	background: linear-gradient(0deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.5));
 }
 
-input[type=text], input[type=password], input[type=email], input[type=number] {
+input[type=text], input[type=password], input[type=email], input[type=number], select {
 	font-family: Vazir, Tahoma, sans-serif;
 	font-weight: bold;
 	font-size: 16px;
@@ -91,8 +91,16 @@ input[type=text], input[type=password], input[type=email], input[type=number] {
 	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.05), 0 6px 20px 0 rgba(0, 0, 0, 0.04);
 }
 
-input[type=text]:focus, input[type=password]:focus, input[type=email]:focus {
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus, select:focus {
 	opacity: 1;
+}
+
+select {
+    background-image: url('arrowicon.png');
+	background-position: right; 
+	background-repeat: no-repeat;
+    -webkit-appearance: none;
+    background-position-x: 16px;
 }
 
 .bluebtn {
