@@ -59,17 +59,20 @@
 	</div>
 	
 	<form class="commentform" action="{{ request.script_root }}/comments?postid={{ postid }}" method="post" accept-charset="utf-8">
+		
+		{{ form.csrf_token }}
+		
 		<span class="text">نام : </span>
-		<input type="text" name="name" value="" maxlength="24" required>
+		<input type="text" name="name" maxlength="24" value="" required>
 		
 		<span class="text">پست الکترونیک :</span>
-		<input type="email" name="mailaddr" maxlength="40" value="">
+		<input type="email" name="mailaddr" minlength="3" maxlength="40" value="">
 		
 		<span class="text">آدرس وبسایت :</span>
 		<input type="text" name="website" maxlength="128" value="">
 		
 		<span class="text">متن نظر :</span>
-		<textarea id="content" name="content" value="" maxlength="255" required></textarea>
+		<textarea id="content" name="content" maxlength="255" value="" required></textarea>
 		
 		<input type="hidden" name="postid" value="{{ postid }}">
 		
