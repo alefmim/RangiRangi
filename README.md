@@ -55,11 +55,12 @@ A simple flask based microblogging cms written in python
 ### ویندوز
 
 بعد از نصب پایتون (نسخه 3 یا بالاتر) خط فرمان ویندوز رو با سطح دسترسی مدیر باز کنید و دستور زیر رو اجرا کنید :
-
+</div>
 ```powershell
 pip3 install Flask Flask-SQLAlchemy Flask-Limiter Werkzeug urllib3 requests SQLAlchemy jdatetime 
 ```
-
+<div dir="rtl">
+  
 *به زودی آموزش رو کامل می کنم...*
 
 ### لینوکس
