@@ -498,7 +498,7 @@ def page():
 # This function handles config page and configurations 
 @app.route("/config", methods=['POST', 'GET'])
 @login_required
-def config(): # TODO: Rewrite this function.
+def config(): # TODO: Rewrite this function and use flask-wtf to render the form.
 	'''
 	Renders the config page and stores new configs in the config file
 	'''
@@ -553,7 +553,7 @@ def config(): # TODO: Rewrite this function.
 # This function handles viewing and saving comments
 @app.route("/comments", methods=['POST', 'GET'])
 @authentication_required
-def comments(): # TODO: Rewrite this function.
+def comments(): # TODO: Rewrite this function and use flask-wtf to render the form.
 	'''
 	Renders the comments page for a specific post and stores new comments in the database
 	'''
@@ -662,7 +662,7 @@ def share():
 # This function handles 'Post' page which is used for saving new posts and editing existing posts in the database
 @app.route("/post", methods=['POST', 'GET'])
 @login_required
-def post(): # TODO: Rewrite th'is function.
+def post(): # TODO: Rewrite this function and use flask-wtf to render the form.
 	'''
 	Renders the post page and stores new or edited posts in the database
 	'''
