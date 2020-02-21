@@ -23,27 +23,18 @@
 			
 			<span class="text">دسته بندی :</span>
 			{{ form['category'] }}
-			<!-- <select name="cat" required>
-				{% for category in categories %}
-				<option value="{{category['name']}}" {% if post['category'] == category['catid'] %} selected {% endif %}>{{category['name']}}</option>
-				{% endfor %}
-			</select>  -->
 			
 			<span class="text">عنوان مطلب :</span>
 			{{ form['title'] }}
-			<!-- <input type="text" name="title" value="{{ post['title'] }}" maxlength="32" required> -->
 			
 			<span class="text tooltip">آدرس محتوای چند رسانه ای* :
 			<span class="tooltiptext">در حال حاضر فقط امکان درج تصاویر وجود دارد<br>[ پر کردن این فیلد الزامی نیست ]</span></span>
 			{{ form['mediaaddr'] }}
-			<!-- <input type="text" name="addr" value="{{ post['mediaaddr'] }}" maxlength="256"> -->
 			
 			<span class="text">محتوای متنی :</span>
 			{{ form['content'] }}
-			<!-- <textarea id="content" name="content" maxlength="512" rows="5" required>{{ post['content'] }}</textarea> -->
 			
 			{{ form['postid'] }}
-			<!-- <input type="hidden" name="id" value="{{ post['postid'] }}" required> -->
 			
 			<button type="submit" class="bluebtn" id="submit">ارسال</button>
 		</form>

@@ -182,7 +182,6 @@ def tr(text: str) -> str:
 
 # Config page form
 class ConfigForm (FlaskForm):
-	
 	title = StringField('title', validators=[DataRequired(), Length(min=1, max=64)])
 	desc = StringField('desc', validators=[DataRequired(), Length(min=1, max=256)])
 	dispname = StringField('dispname', validators=[DataRequired(), Length(min=1, max=32)])
@@ -196,7 +195,6 @@ class ConfigForm (FlaskForm):
 
 # Comment page form
 class CommentForm (FlaskForm):
-	
 	name = StringField('name', validators=[DataRequired(), Length(min=1, max=24)])
 	mailaddr = StringField('mailaddr', validators=[Optional(), Email(), Length(min=3, max=40)])
 	website = StringField('website', validators=[Optional(), URL(), Length(min=3, max=40)])
@@ -345,7 +343,7 @@ def deleteTag(hashTag: str):
 	db.session.commit()
 
 # We'll use this decorator before any function that requires to check user privileges
-def authentication_required(func): # CRITICAL: change session['logged_in'] to False
+def authentication_required(func):
 	'''
 	A decorator which is used before any function that requires to check user privileges
 	and check if user has admin privileges or not! if user doesn't have admin privileges
@@ -356,7 +354,7 @@ def authentication_required(func): # CRITICAL: change session['logged_in'] to Fa
 	def authenticate(*args, **kwargs):
 		# If user didn't login yet then we'll save (logged_in = False) for his session!
 		if not 'logged_in' in session :
-			session['logged_in'] = True
+			session['logged_in'] = False
 		return func(*args, **kwargs)
 	return authenticate
 
@@ -779,7 +777,7 @@ def post(): # NOTE: Need more test and review!
 		# Return to index and let the user see the new post
 		return redirect(url_for('index'))
 	# Render the page and fill it with the available data
-	return render_template("post.html", post=post, categories = categories, form=form, admin=session['logged_in'])
+	return render_template("post.html", categories = categories, form=form, admin=session['logged_in'])
 	
 # This function Removes the post from the database and execute the 'deleteTag' function for its hashtags and remove its comments
 def removepost(id: int):
@@ -840,27 +838,21 @@ def show():
 	'''
 	# Get 'id' from the requested url, if it's empty we'll assign it '-1' 
 	id =  request.args.get('id', default = -1, type = int)
-	
 	# Find the post which user requested
 	result = dbpost.query.filter(dbpost.postid == id).first()
-	
 	# Check if the requested post exists
 	if result is None :
 		# Render 400 error page and returns error code 400 'Bad Request' to the client
 		return render_template('400.html'), 400
-	
 	# Find its category
 	category = dbcategory.query.filter(dbcategory.catid == result.category).first()
-	
 	# Load config file to the memory as config object
 	with open('config.json', 'r') as configFile :
 		config = json.load(configFile)
 		# Get date/time format
 		dtformat = config['dtformat']	
-	
 	# Create an empty post! We'll use it to send data to the client
 	post = {}
-	
 	# Replace hashtags with linked hashtags!
 	post['content'] = prcText(result.content, request.script_root)
 	# Format date/time
@@ -1165,7 +1157,7 @@ def install():
 	db.create_all()
 	# Create a category (to prevent errors!)
 	if dbcategory.query.count() == 0 :
-		category = dbcategory(tr('Other', 0))
+		category = dbcategory(tr('Other'), 0)
 		db.session.add(category)
 		# Save changes to the database
 		db.session.commit()
