@@ -145,30 +145,30 @@ class dblink(db.Model):
 		self.address = address	# Link Address
 		self.order = order	# Link Order
 
-# This function will look for translation of the given string in translations.json file
+# This function will look for translation of the given string in translation.json file
 def tr(text: str) -> str:
-	''' Looks for translation of 'text' in translations.json file
+	''' Looks for translation of 'text' in translation.json file
 	
 	Parameters
 	----------
 	text : str
-		Persian/Farsi string to lookup in translations.json file
+		Persian/Farsi string to lookup in translation.json file
 	
 	Returns
 	-------
 	str
-		mapped string to 'text' in translations.json file
+		mapped string to 'text' in translation.json file
 	'''
 	# This will prevent some errors!
 	translate = {}
-	# Open translations.json file
+	# Open translation.json file
 	try :
-		with open('translations.json', 'r', encoding='utf-8') as translations :
-			translate = json.load(translations) # Load translations.json file to memory as translate object
-	except (FileNotFoundError, ValueError) : # This exception means there's no translations.json file
+		with open('translation.json', 'r', encoding='utf-8') as translations :
+			translate = json.load(translations) # Load translation.json file to memory as translate object
+	except (FileNotFoundError, ValueError) : # This exception means there's no translation.json file
 		# So We'll return the given persian/farsi text
 		return text
-	# Return mapped string to 'text' in the translations.json file
+	# Return mapped string to 'text' in the translation.json file
 	try :
 		# Return translation if it exists or return the given string if there's no translation!
 		return translate[text] if translate[text] else text
