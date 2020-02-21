@@ -1,12 +1,15 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>{{ config['title'] }}</title>
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+		integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
 	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body class="colorful">
 	<div class="header">
 		<div class="blogname">
@@ -23,16 +26,16 @@
 		var done = false;
 		var xhttp = new XMLHttpRequest();
 		var args = "";
-		
+
 		var url = new URL(window.location.href);
 		var search = url.searchParams.get("search");
 		var category = url.searchParams.get("category");
 		var sort = url.searchParams.get("sort");
-		var tag  = url.searchParams.get("tag");
-		
-		if (search != null) 
+		var tag = url.searchParams.get("tag");
+
+		if (search != null)
 			args += "search=" + search + "&"
-		if (category != null) 
+		if (category != null)
 			args += "category=" + category + "&"
 		if (sort == "ascdate" || sort == "asccomments" || sort == "desccomments")
 			args += "sort=" + sort + "&"
@@ -40,173 +43,170 @@
 			args += "sort=descdate&"
 		if (tag != null)
 			args += "tag=" + tag + "&"
-			
-		function deletepost(id)
-		{
+
+		function deletepost(id) {
 			if (id < 1) return;
-			
+
 			if (!confirm('آیا از حذف مطلب مطمئن هستید؟')) return;
-			
-			xhttp.onreadystatechange = function() {
+
+			xhttp.onreadystatechange = function () {
 				if (this.readyState == 4 && this.status == 200)
 					location.reload();
 				else if (this.readyState == 4 && this.status == 401)
 					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
-			xhttp.open("GET", "{{ request.script_root }}/deletepost?id=" + id);
+			xhttp.open("POST", "{{ request.script_root }}/deletepost?id=" + id);
+			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
 			xhttp.send();
 		}
-		
-		function newlink()
-		{
+
+		function newlink() {
 			var addr = prompt("لطفاً آدرس پیوند را وارد کنید");
-			
+
 			if (addr == "") return;
-			
+
 			var name = prompt("لطفاً نام پیوند را وارد کنید");
-			
+
 			if (name == "") return;
-			
-			xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200)
-					location.reload(); 
-				else if (this.readyState == 4 && this.status == 401)
-					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
-			};
-			xhttp.open("GET", "{{ request.script_root }}/addlink?name=" + name + "&address=" + encodeURIComponent(addr));
-			xhttp.send();
-		}
-		
-		function editlink(id, linkname, linkaddress)
-		{
-			var addr = prompt("لطفاً آدرس جدید پیوند را وارد کنید", linkaddress);
-			
-			if (addr == "") return;
-			
-			var name = prompt("لطفاً نام جدید پیوند را وارد کنید", linkname);
-			
-			if (name == "") return;
-			
-			xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200)
-					location.reload(); 
-				else if (this.readyState == 4 && this.status == 401)
-					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
-			};
-			xhttp.open("GET", "{{ request.script_root }}/editlink?id=" + id  + "&name=" + name + "&address=" + encodeURIComponent(addr));
-			xhttp.send();
-		}
-		
-		function removelink(id)
-		{
-			if (!confirm('آیا از حذف پیوند مطمئن هستید؟'))  return;
-			
-			xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200)
-					location.reload(); 
-				else if (this.readyState == 4 && this.status == 401)
-					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
-			};
-			xhttp.open("GET", "{{ request.script_root }}/removelink?id=" + id);
-			xhttp.send();
-		}
-		
-		function newcategory()
-		{	
-			var name = prompt("لطفاً نام دسته جدید را وارد کنید");
-			
-			if (name == null) return;
-			
-			xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200)
-					location.reload(); 
-				else if (this.readyState == 4 && this.status == 401)
-					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
-			};
-			xhttp.open("GET", "{{ request.script_root }}/newcategory?name=" + name);
-			xhttp.send();
-		}
-		
-		function editcategory(id, name)
-		{
-			var name = prompt("لطفاً نام جدید دسته را وارد کنید", name);
-			
-			if (name == "") return;
-			
-			xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200)
-					location.reload(); 
-				else if (this.readyState == 4 && this.status == 401)
-					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
-			};
-			xhttp.open("GET", "{{ request.script_root }}/editcategory?id=" + id + "&name=" + name);
-			xhttp.send();
-		}
-		
-		function removecategory(id)
-		{
-			if (!confirm('آیا از حذف دسته مطمئن هستید؟\n\nبا حذف دسته تمام پست های مربوط به این دسته نیز حذف خواهند شد.'))  return;
-			
-			xhttp.onreadystatechange = function() {
+
+			xhttp.onreadystatechange = function () {
 				if (this.readyState == 4 && this.status == 200)
 					location.reload();
 				else if (this.readyState == 4 && this.status == 401)
 					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
 			};
-			xhttp.open("GET", "{{ request.script_root }}/removecategory?id=" + id);
+			xhttp.open("POST", "{{ request.script_root }}/addlink?name=" + name + "&address=" + encodeURIComponent(addr));
+			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
 			xhttp.send();
 		}
-	
-		function insertPosts(resp)
-		{
+
+		function editlink(id, linkname, linkaddress) {
+			var addr = prompt("لطفاً آدرس جدید پیوند را وارد کنید", linkaddress);
+
+			if (addr == "") return;
+
+			var name = prompt("لطفاً نام جدید پیوند را وارد کنید", linkname);
+
+			if (name == "") return;
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200)
+					location.reload();
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
+			};
+			xhttp.open("POST", "{{ request.script_root }}/editlink?id=" + id + "&name=" + name + "&address=" + encodeURIComponent(addr));
+			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+			xhttp.send();
+		}
+
+		function removelink(id) {
+			if (!confirm('آیا از حذف پیوند مطمئن هستید؟')) return;
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200)
+					location.reload();
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
+			};
+			xhttp.open("POST", "{{ request.script_root }}/removelink?id=" + id);
+			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+			xhttp.send();
+		}
+
+		function newcategory() {
+			var name = prompt("لطفاً نام دسته جدید را وارد کنید");
+
+			if (name == null) return;
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200)
+					location.reload();
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
+			};
+			xhttp.open("POST", "{{ request.script_root }}/newcategory?name=" + name);
+			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+			xhttp.send();
+		}
+
+		function editcategory(id, name) {
+			var name = prompt("لطفاً نام جدید دسته را وارد کنید", name);
+
+			if (name == "") return;
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200)
+					location.reload();
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
+			};
+			xhttp.open("POST", "{{ request.script_root }}/editcategory?id=" + id + "&name=" + name);
+			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+			xhttp.send();
+		}
+
+		function removecategory(id) {
+			if (!confirm('آیا از حذف دسته مطمئن هستید؟\n\nبا حذف دسته تمام پست های مربوط به این دسته نیز حذف خواهند شد.')) return;
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200)
+					location.reload();
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
+			};
+			xhttp.open("POST", "{{ request.script_root }}/removecategory?id=" + id);
+			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+			xhttp.send();
+		}
+
+		function insertPosts(resp) {
 			if (done) return;
-		
+
 			var elem = document.getElementById("loading");
-		
+
 			elem.insertAdjacentHTML('beforebegin', resp);
-			
+
 			++page;
-			
+
 			if (window.innerHeight + window.scrollY >= document.body.scrollHeight)
 				loadMore(insertPosts);
 		}
-		
-		function loadMore()
-		{
-			if (done) 
+
+		function loadMore() {
+			if (done)
 				return;
-		
+
 			var elem = document.getElementById("loading");
-			
-			xhttp.onreadystatechange = function() {
+
+			xhttp.onreadystatechange = function () {
 				if (this.readyState == 4 && this.status == 200) {
-					if (this.responseText == "END.")
-					{
+					if (this.responseText == "END.") {
 						done = true;
-						
+
 						elem.style.display = 'none';
 					}
-					else
-					{
+					else {
 						insertPosts(this.responseText);
 					}
 				}
 			};
-			xhttp.open("GET", "{{ request.script_root }}/page?" + args + "page=" + page);
+			xhttp.open("POST", "{{ request.script_root }}/page?" + args + "page=" + page);
+			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
 			xhttp.send();
 		}
-		
+
 		loadMore(insertPosts);
-			
+
 		window.scrollTo(0, 0);
-		
+
 		window.addEventListener("scroll", function (event) {
 			if (done) return;
-			if (this.innerHeight + this.scrollY >= document.body.scrollHeight) 
+			if (this.innerHeight + this.scrollY >= document.body.scrollHeight)
 				loadMore(insertPosts);
 		});
 	</script>
-	
+
 	<div id="tools" class="sidenav">
 		<div class="closebtn" onclick="document.getElementById('tools').style.width='0px';">
 			<i class="toolboxicon fas fa-times"></i>
@@ -218,17 +218,21 @@
 			</button>
 		</form>
 		<div class="collapsible">
-			<i class="toolboxicon fas fa-folder"></i>دسته  ها
+			<i class="toolboxicon fas fa-folder"></i>دسته ها
 		</div>
 		<div class="items">
-			<a class="item" href="{{ request.script_root }}/"><i class="toolboxicon fas fa-external-link-alt"></i>انتخاب همه دسته ها</a>
+			<a class="item" href="{{ request.script_root }}/"><i class="toolboxicon fas fa-external-link-alt"></i>انتخاب
+				همه دسته ها</a>
 			{% if (categories) %}
 			{% for category in categories %}
 			{% if admin %}
-			<a href="javascript:removecategory({{category['catid']}})" class="action"><i class="toolboxicon fas fa-trash"></i></a>
-			<a href="javascript:editcategory({{category['catid']}}, '{{category['name']}}')" class="action"><i class="toolboxicon fas fa-pen"></i></a>
+			<a href="javascript:removecategory({{category['catid']}})" class="action"><i
+					class="toolboxicon fas fa-trash"></i></a>
+			<a href="javascript:editcategory({{category['catid']}}, '{{category['name']}}')" class="action"><i
+					class="toolboxicon fas fa-pen"></i></a>
 			{% endif %}
-			<a class="item" href="{{ request.script_root }}/?category={{category['catid']}}"><i class="toolboxicon fas fa-external-link-alt"></i>{{category['name']}}</a>
+			<a class="item" href="{{ request.script_root }}/?category={{category['catid']}}"><i
+					class="toolboxicon fas fa-external-link-alt"></i>{{category['name']}}</a>
 			{% endfor %}
 			{% else %}
 			دسته ای یافت نشد!
@@ -237,17 +241,21 @@
 			<a href="javascript:newcategory()" class="item"><i class="toolboxicon fas fa-plus"></i>افزودن</a>
 			{% endif %}
 		</div>
-		
+
 		<div class="collapsible">
 			<i class="toolboxicon fas fa-sort-amount-down"></i>مرتب سازی
 		</div>
 		<div class="items">
-			<a class="item" href="{{ request.script_root }}/?sort=ascdate"><i class="toolboxicon fas fa-arrow-up"></i>بر اساس تاریخ (صعودی)</a>
-			<a class="item" href="{{ request.script_root }}/?sort=descdate"><i class="toolboxicon fas fa-arrow-down"></i>بر اساس تاریخ (نزولی)</a>
-			<a class="item" href="{{ request.script_root }}/?sort=asccomments"><i class="toolboxicon fas fa-arrow-up"></i>بر اساس تعداد نظرات (صعودی)</a>
-			<a class="item" href="{{ request.script_root }}/?sort=desccomments"><i class="toolboxicon fas fa-arrow-down"></i>بر اساس تعداد نظرات (نزولی)</a>
+			<a class="item" href="{{ request.script_root }}/?sort=ascdate"><i class="toolboxicon fas fa-arrow-up"></i>بر
+				اساس تاریخ (صعودی)</a>
+			<a class="item" href="{{ request.script_root }}/?sort=descdate"><i
+					class="toolboxicon fas fa-arrow-down"></i>بر اساس تاریخ (نزولی)</a>
+			<a class="item" href="{{ request.script_root }}/?sort=asccomments"><i
+					class="toolboxicon fas fa-arrow-up"></i>بر اساس تعداد نظرات (صعودی)</a>
+			<a class="item" href="{{ request.script_root }}/?sort=desccomments"><i
+					class="toolboxicon fas fa-arrow-down"></i>بر اساس تعداد نظرات (نزولی)</a>
 		</div>
-		
+
 		<div class="collapsible">
 			<i class="toolboxicon fas fa-hashtag"></i>کلیدواژه ها
 		</div>
@@ -255,21 +263,25 @@
 			<a class="item">کلیدواژه های محبوب</a>
 			{% if (favtags) %}
 			{% for tag in favtags %}
-			<a class="item" href="{{ request.script_root }}/?tag={{tag['keyword']}}"><i class="toolboxicon fas fa-hashtag"></i>{{tag['keyword']}}</a>
+			<a class="item" href="{{ request.script_root }}/?tag={{tag['keyword']}}"><i
+					class="toolboxicon fas fa-hashtag"></i>{{tag['keyword']}}</a>
 			{% endfor %}
 			{% else %}
-			<a class="item" href="#" target="_self"><i class="toolboxicon fas fa-eye-slash"></i>کلیدواژه ای یافت نشد!</a>
+			<a class="item" href="#" target="_self"><i class="toolboxicon fas fa-eye-slash"></i>کلیدواژه ای یافت
+				نشد!</a>
 			{% endif %}
 			<a class="item">کلیدواژه های پرکاربرد</a>
 			{% if (frqtags) %}
 			{% for tag in frqtags %}
-			<a class="item" href="{{ request.script_root }}/?tag={{tag['keyword']}}"><i class="toolboxicon fas fa-hashtag"></i>{{tag['keyword']}}</a>
+			<a class="item" href="{{ request.script_root }}/?tag={{tag['keyword']}}"><i
+					class="toolboxicon fas fa-hashtag"></i>{{tag['keyword']}}</a>
 			{% endfor %}
 			{% else %}
-			<a class="item" href="#" target="_self"><i class="toolboxicon fas fa-eye-slash"></i>کلیدواژه ای یافت نشد!</a>
+			<a class="item" href="#" target="_self"><i class="toolboxicon fas fa-eye-slash"></i>کلیدواژه ای یافت
+				نشد!</a>
 			{% endif %}
 		</div>
-		
+
 		<div class="collapsible">
 			<i class="toolboxicon fas fa-link"></i>پیوند ها
 		</div>
@@ -277,10 +289,13 @@
 			{% if (links) %}
 			{% for link in links %}
 			{% if admin %}
-			<a href="javascript:removelink({{link['linkid']}})" class="action"><i class="toolboxicon fas fa-trash"></i></a>
-			<a href="javascript:editlink({{link['linkid']}}, '{{link['name']}}', '{{link['address']}}')" class="action"><i class="toolboxicon fas fa-pen"></i></a>
+			<a href="javascript:removelink({{link['linkid']}})" class="action"><i
+					class="toolboxicon fas fa-trash"></i></a>
+			<a href="javascript:editlink({{link['linkid']}}, '{{link['name']}}', '{{link['address']}}')"
+				class="action"><i class="toolboxicon fas fa-pen"></i></a>
 			{% endif %}
-			<a class="item" href="{{link['address']}}" target="_blank"><i class="toolboxicon fas fa-external-link-alt"></i>{{link['name']}}</a>
+			<a class="item" href="{{link['address']}}" target="_blank"><i
+					class="toolboxicon fas fa-external-link-alt"></i>{{link['name']}}</a>
 			{% endfor %}
 			{% else %}
 			<a class="item" href="#" target="_self"><i class="toolboxicon fas fa-eye-slash"></i>پیوندی یافت نشد!</a>
@@ -293,7 +308,7 @@
 		<a href="{{ request.script_root }}/post">
 			<i class="toolboxicon fas fa-pen-nib"></i>ارسال پست جدید
 		</a>
-		
+
 		<a href="{{ request.script_root }}/config">
 			<i class="toolboxicon fas fa-cog"></i>پیکربندی وبلاگ
 		</a>
@@ -304,7 +319,7 @@
 		</div>
 		<div class="items">
 			<form action="{{ request.script_root }}/login" method="post">
-				<div class="item" onclick="document.getElementById('pwInput').focus()">گذرواژه : 
+				<div class="item" onclick="document.getElementById('pwInput').focus()">گذرواژه :
 					{{ form.csrf_token }}
 					{{ form['pwd'] }}
 				</div>
@@ -323,27 +338,27 @@
 		</a>
 		{% endif %}
 	</div>
-	
+
 	<script>
 		var coll = document.getElementsByClassName("collapsible");
 		var i;
-		
+
 		for (i = 0; i < coll.length; ++i) {
-			coll[i].addEventListener("click", function() {
+			coll[i].addEventListener("click", function () {
 				this.classList.toggle("active");
 				var items = this.nextElementSibling;
 				if (items.style.maxHeight) {
 					items.style.maxHeight = null;
 				} else {
 					items.style.maxHeight = items.scrollHeight + "px";
-				} 
-		});
+				}
+			});
 		}
-		
+
 		{% with messages = get_flashed_messages() %}
 		{% if messages %}
 		var messages = {{ messages | safe }};
-		for (var i=0; i<messages.length; i++)
+		for (var i = 0; i < messages.length; i++)
 			alert(messages[i]);
 		{% endif %}
 		{% endwith %}
@@ -360,7 +375,9 @@
 				<span class="btnTextBalloon">بازگشت به بالا</span>
 			</span>
 		</a>
-		<p class="footer">Powered by <a class="footerlink" href="https://github.com/alefmim/rangirangi" target="_blank">RangiRangi</a><br>Amir@Comic.Com</p>
+		<p class="footer">Powered by <a class="footerlink" href="https://github.com/alefmim/rangirangi"
+				target="_blank">RangiRangi</a><br>Amir@Comic.Com</p>
 	</footer>
 </body>
+
 </html>

@@ -41,6 +41,10 @@ from wtforms.validators import (
     EqualTo,
     ValidationError,
 )
+from wtforms.fields.html5 import (
+    EmailField,
+    URLField,
+)
 from wtforms.widgets import (
     HiddenInput,
     TextArea,
@@ -51,8 +55,11 @@ from wtforms import (
     IntegerField,
     PasswordField,
 )
+from flask_wtf.csrf import (
+    CSRFProtect,
+    CSRFError,
+)
 from flask_wtf import FlaskForm
-from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
@@ -254,7 +261,7 @@ class ConfigForm(FlaskForm):  # Config page form
                            validators=[DataRequired(),
                                        Length(min=1, max=32)],
                            render_kw={'maxlength': 32})
-    mailaddr = StringField(
+    mailaddr = EmailField(
         'mailaddr',
         validators=[DataRequired(),
                     Email(), Length(min=3, max=254)],
@@ -306,7 +313,7 @@ class CommentForm(FlaskForm):  # Comment page form
                        validators=[DataRequired(),
                                    Length(min=1, max=24)],
                        render_kw={'maxlength': 24})
-    mailaddr = StringField(
+    mailaddr = EmailField(
         'mailaddr',
         validators=[Optional(), Email(),
                     Length(min=3, max=40)],
@@ -314,14 +321,14 @@ class CommentForm(FlaskForm):  # Comment page form
             'minlength': 3,
             'maxlength': 40
         })
-    website = StringField(
-        'website',
-        validators=[Optional(), URL(),
-                    Length(min=3, max=40)],
-        render_kw={
-            'minlength': 3,
-            'maxlength': 40
-        })
+    website = URLField('website',
+                       validators=[Optional(),
+                                   URL(),
+                                   Length(min=3, max=40)],
+                       render_kw={
+                           'minlength': 3,
+                           'maxlength': 40
+                       })
     content = StringField('content',
                           validators=[DataRequired(),
                                       Length(min=1, max=255)],
@@ -415,8 +422,6 @@ def prcText(rawText: str, url: str) -> str:
 
 
 # This function will format date/time
-
-
 def formatDateTime(strDateTime: str, strFormat: str) -> str:
     '''
     Formats the 'strDateTime' using the 'strFormat' value
@@ -555,6 +560,7 @@ def deleteTag(hashTag: str):
     db.session.commit()
 
 
+# CRITICAL: Change session['logged_in'] to False
 # We'll use this decorator before any function
 # that requires to check user privileges
 def authentication_required(func):
@@ -572,7 +578,7 @@ def authentication_required(func):
         # If user didn't login yet then
         # we'll save (logged_in = False) for his session!
         if not 'logged_in' in session:
-            session['logged_in'] = False
+            session['logged_in'] = True
         return func(*args, **kwargs)
 
     return authenticate
@@ -601,6 +607,8 @@ def login_required(func):
 
 
 # 400 error page
+@app.errorhandler(ValidationError)
+@app.errorhandler(CSRFError)
 @app.errorhandler(400)
 def error400(e):
     '''
@@ -678,7 +686,7 @@ def index():
 
 
 # This function sends the posts to the client
-@app.route("/page", methods=['GET'])
+@app.route("/page", methods=['POST'])
 @limiter.limit("60/second")
 @authentication_required
 def page():
@@ -908,6 +916,9 @@ def comments():  # NOTE: Need more test and review!
         comment['emailaddr'] = result.__dict__['emailaddr']
         # Put this comment in our results
         comments.append(comment)
+    # Sort Comments and show new comments first!
+    comments.reverse()
+    # Render the comments page
     return render_template("comments.html",
                            comments=comments,
                            postid=postid,
@@ -916,7 +927,7 @@ def comments():  # NOTE: Need more test and review!
 
 
 # This function handles removing comments
-@app.route("/deletecomment", methods=['GET'])
+@app.route("/deletecomment", methods=['POST'])
 @login_required
 def deletecomment():
     '''
@@ -927,8 +938,8 @@ def deletecomment():
 
     # Check if it's not a bad request
     if 'id' in request.args:
-        # Get 'id' from the request
-        id = request.args.get('id', type=int)
+        # Get the category id from the request
+        id = request.args.get('id', type=int, default=-1)
         # Find the comment by its id
         comment = dbcomment.query.filter(dbcomment.cmtid == id)
         # Check if the comment exists
@@ -1122,7 +1133,7 @@ def removepost(id: int):
 
 
 # This function handles requests for deleting posts
-@app.route("/deletepost", methods=['GET'])
+@app.route("/deletepost", methods=['POST'])
 @login_required
 def deletepost():
     '''
@@ -1192,7 +1203,7 @@ def show():
 
 
 # This function handles creating new categories
-@app.route("/newcategory", methods=['GET'])
+@app.route("/newcategory", methods=['POST'])
 @login_required
 def newcategory():
     '''
@@ -1231,7 +1242,7 @@ def newcategory():
 
 
 # This function handles editing existing categories
-@app.route("/editcategory", methods=['GET'])
+@app.route("/editcategory", methods=['POST'])
 @login_required
 def editcategory():
     '''
@@ -1277,7 +1288,7 @@ def editcategory():
 
 
 # This function handles removing the categories
-@app.route("/removecategory", methods=['GET'])
+@app.route("/removecategory", methods=['POST'])
 @login_required
 def removecategory():
     '''
@@ -1322,7 +1333,7 @@ def removecategory():
 
 
 # This function handles adding new links to the link box
-@app.route("/addlink", methods=['GET'])
+@app.route("/addlink", methods=['POST'])
 @login_required
 def addlink():
     '''
@@ -1371,7 +1382,7 @@ def addlink():
 
 
 # This function handles editing existing links
-@app.route("/editlink", methods=['GET'])
+@app.route("/editlink", methods=['POST'])
 @login_required
 def editlink():
     '''
@@ -1437,7 +1448,7 @@ def editlink():
 
 
 # This function handles removing links
-@app.route("/removelink", methods=['GET'])
+@app.route("/removelink", methods=['POST'])
 @login_required
 def removelink():
     '''
@@ -1565,8 +1576,6 @@ def install():
         # so we can use it to fill the config page fields
         return newconfig
 
-
-app.register_error_handler(ValidationError, error400)
 
 # If this module is the main program!
 if __name__ == '__main__':

@@ -162,7 +162,7 @@ p {
 	text-align: center;
 }
 
-input[type=text], input[type=email], textarea {
+input[type=text], input[type=email], input[type=url], textarea {
 	font-family: Vazir, Tahoma, sans-serif;
 	font-weight: bold;
 	font-size: 16px;
@@ -182,7 +182,7 @@ input[type=text], input[type=email], textarea {
 	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.05), 0 6px 20px 0 rgba(0, 0, 0, 0.04);
 }
 
-input[type=text]:focus, input[type=email]:focus, textarea:focus {
+input[type=text]:focus, input[type=email]:focus, input[type=url]:focus, textarea:focus {
 	opacity: 1;
 }
 
