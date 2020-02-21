@@ -18,25 +18,23 @@
 		</div>
 		
 		<form class="editform" action="{{ request.script_root }}/post" method="post" accept-charset="utf-8">
-		
+			
+			{{ form.csrf_token }}
+			
 			<span class="text">دسته بندی :</span>
-			<select id="target" name="cat">
-				{% for category in categories %}
-				<option value="{{category['catid']}}" {% if post['category'] == category['catid'] %} selected {% endif %}>{{category['name']}}</option>
-				{% endfor %}
-			</select> 
+			{{ form['category'] }}
 			
 			<span class="text">عنوان مطلب :</span>
-			<input type="text" name="title" value="{{ post['title'] }}" required>
+			{{ form['title'] }}
 			
 			<span class="text tooltip">آدرس محتوای چند رسانه ای* :
 			<span class="tooltiptext">در حال حاضر فقط امکان درج تصاویر وجود دارد<br>[ پر کردن این فیلد الزامی نیست ]</span></span>
-			<input type="text" name="addr" value="{{ post['mediaaddr'] }}">
+			{{ form['mediaaddr'] }}
 			
 			<span class="text">محتوای متنی :</span>
-			<textarea id="content" name="content" maxlength="512" rows="5" required>{{ post['content'] }}</textarea>
+			{{ form['content'] }}
 			
-			<input type="hidden" name="id" value="{{ post['postid'] }}">
+			{{ form['postid'] }}
 			
 			<button type="submit" class="bluebtn" id="submit">ارسال</button>
 		</form>

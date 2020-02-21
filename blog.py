@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
 # # # # #
-# RangiRangi v191110alpha
+# RangiRangi v2002210240a
 # A simple flask based Microblogging CMS written in Python
 # Coded by AlefMim (github.com/alefmim)
-# Contact me at AmirMohammad@Programmer.Net
+# Contact me at mralefmim@gmail.com
 # # # # # # # # # #
 
 import os
@@ -29,9 +29,34 @@ from flask import (
 	session,
 	flash,
 )
+from wtforms.validators import (
+	InputRequired,
+	DataRequired,
+	Optional,
+	Email,
+	URL,
+	Length,
+	NumberRange,
+	AnyOf,
+	EqualTo,
+	ValidationError
+)
+from wtforms.widgets import (
+	HiddenInput,
+	TextArea
+)
+from wtforms import (
+	SelectField,
+	StringField,
+	IntegerField,
+	PasswordField
+)
+from flask_wtf import FlaskForm
+from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
+from flask_inputs import Inputs
 from sqlalchemy import or_
 from random import randrange
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -48,6 +73,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Because we don't need it
 # Assign a 32 bytes length random value to app.secret_key
 app.secret_key = os.urandom(32)
 app.wsgi_app = ProxyFix(app.wsgi_app)
+csrf = CSRFProtect(app)
 db = SQLAlchemy(app)
 
 # Order Columns are currently not being used but we'll use them in the future!
@@ -123,7 +149,6 @@ class dblink(db.Model):
 		self.address = address	# Link Address
 		self.order = order	# Link Order
 
-
 # This function will look for translation of the given string in translation.json file
 def tr(text: str) -> str:
 	''' Looks for translation of 'text' in translation.json file
@@ -154,6 +179,35 @@ def tr(text: str) -> str:
 	except KeyError : # This exception means there's no match for given string
 		# So We'll return the given persian/farsi text
 		return text
+
+# Config page form
+class ConfigForm (FlaskForm):
+	title = StringField('title', validators=[DataRequired(), Length(min=1, max=64)])
+	desc = StringField('desc', validators=[DataRequired(), Length(min=1, max=256)])
+	dispname = StringField('dispname', validators=[DataRequired(), Length(min=1, max=32)])
+	mailaddr = StringField('mailaddr', validators=[DataRequired(), Email(), Length(min=3, max=254)])
+	dtformat = StringField('dtformat', validators=[DataRequired(), Length(min=2, max=32)])
+	calendar = SelectField('calendar', validators=[DataRequired()], choices=[('Gregorian', tr('Gregorian')), ('Jalali', tr('Jalali'))])
+	currpwd = PasswordField('currpwd', validators=[InputRequired(), Length(min=5, max=128)])
+	newpwd = PasswordField('newpwd', validators=[Optional(), Length(min=8, max=128), EqualTo('confirmpwd')], id='pwd1')
+	confirmpwd = PasswordField('confirmpwd', validators=[Optional(), Length(min=8, max=128), EqualTo('newpwd')], id='pwd2')
+	ppp = IntegerField('ppp', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)])
+
+# Comment page form
+class CommentForm (FlaskForm):
+	name = StringField('name', validators=[DataRequired(), Length(min=1, max=24)])
+	mailaddr = StringField('mailaddr', validators=[Optional(), Email(), Length(min=3, max=40)])
+	website = StringField('website', validators=[Optional(), URL(), Length(min=3, max=40)])
+	content = StringField('content', validators=[DataRequired(), Length(min=1, max=255)])
+	postid = IntegerField('postid', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)], widget=HiddenInput())
+
+# Post page form
+class PostForm (FlaskForm):
+	category = SelectField('category', coerce=int, validators=[DataRequired()])
+	title = StringField('title', validators=[DataRequired(), Length(min=1, max=32)])
+	content = StringField('content', validators=[DataRequired(), Length(min=1, max=256)], widget=TextArea(), render_kw={'rows': 5})
+	mediaaddr = StringField('mediaaddr', validators=[Optional(), Length(min=1, max=256)])
+	postid = IntegerField('postid', validators=[Optional(), NumberRange(min=1, max=9999999999999999)], widget=HiddenInput())
 
 # This function replaces all hashtags in 'rawText' with linked hashtags 
 # 'url' must only contain domain name and script path (send request.script_root as its value!)
@@ -321,6 +375,14 @@ def login_required(func):
 		return func(*args, **kwargs) 
 	return checkPrivileges
 
+# 400 error page
+@app.errorhandler(400)
+def error400(e):
+	'''
+	Renders our custom 400 error page and returns error code 400 'Bad Request' to the client
+	'''
+	return render_template('400.html'), 400
+
 # 404 error page
 @app.errorhandler(404)
 def error404(e):
@@ -344,7 +406,7 @@ def index():
 			config = json.load(configFile) # This will load config file to the memory as config object
 	except FileNotFoundError : # This exception means that our program is not installed and configured yet!
 		# So we'll call install() to make the config and database files and redirect user to config page
-		return render_template("config.html", config=install()) 
+		return render_template("config.html", config=install(), form=ConfigForm())
 	# If someone looks for a specific hashtag we'll increase its popularity by 1 
 	# Get the hashtag from the request
 	tag  = request.args.get('tag', default = '', type = str)
@@ -380,7 +442,7 @@ def page():
 	pageNum =  request.args.get('page', default = 2, type = int)
 	search = request.args.get('search', default = '', type = str)
 	category = request.args.get('category', default = -1, type = int)
-	sort = request.args.get('sort', default = 'ascdate', type = str)
+	sort = request.args.get('sort', default = 'descdate', type = str)
 	tag  = request.args.get('tag', default = '', type = str)
 	# We'll use this object to execute database queries and find the posts which user requested!
 	query = dbpost.query
@@ -400,7 +462,6 @@ def page():
 		query = query.order_by(dbpost.comments)	
 	if sort == 'desccomments' : # Sort by Number of Comments (Descending Order)
 		query = query.order_by(dbpost.comments.desc())
-	
 	# Load config file to the memory as config object
 	with open('config.json', 'r') as configFile :
 		config = json.load(configFile)
@@ -408,28 +469,22 @@ def page():
 		ppp = config['ppp']
 		# Get date/time format
 		dtformat = config['dtformat']
-	
 	# Limit the results to the number of Posts Per Page
 	results = query.offset(pageNum * ppp).limit(ppp)
-	
 	# Send "END." if there's no more results to send with status code 200 which means the request was successful
 	if results.count() == 0 :
 		return Response(response="END.", status=200, mimetype='text/html')
-	
 	# This small block of code will handle the positioning of the posts (should they appear on the right side or the left side of the timeline?!)
 	if (ppp % 2) == 1 and (pageNum % 2) == 1 :
 		c = 0
 	else :
 		c = 1
-	
 	# Array of our posts (results)
 	posts = []
-	
 	# We'll use this loop to run the 'prcText' function on each post's content
 	# and replace all hashtags in each post with linked hashtags and format its date/time
 	for result in results :
 		post = {} # A single post (we'll assign its values below!)
-		
 		# We'll replace hashtags with linked hashtags using the 'prcText' function
 		post['content'] = prcText(result.__dict__['content'], request.script_root)
 		# And format date/time using the 'formatDateTime' function
@@ -443,97 +498,108 @@ def page():
 		post['mediaaddr'] = result.__dict__['mediaaddr']
 		# Put this post in our results
 		posts.append(post)
-	
+	# Render results
 	return render_template("page.html", posts=posts, c=c, mimetype="text/html", admin=session['logged_in'])
 
-# This function handles config page and configurations 
+# This function handles config page and configurations
 @app.route("/config", methods=['POST', 'GET'])
 @login_required
-def config():
+def config(): # NOTE: Need more test!
 	'''
 	Renders the config page and stores new configs in the config file
 	'''
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 
-	# Create a new config (we'll load data in it later!)
+	# Create a new config object (we'll load data in it later!)
 	config = {}
 	# Load config file to the memory as config object
 	with open('config.json', 'r') as configFile :
 		config = json.load(configFile)
-		
-	# If there's any request from client to change the config
-	if 'title' in request.form :
+	# Form object which holds the request data 
+	form = ConfigForm(request.form)
+	# If user opened the config page without requesting to change the config
+	if request.method == 'GET':
+		# Fill the form with current config
+		form.title.default = config['title']
+		form.desc.default = config['desc']
+		form.dispname.default = config['dispname']
+		form.mailaddr.default = config['mailaddr']
+		form.ppp.default = config['ppp']
+		form.dtformat.default = config['dtformat']
+		form.calendar.default = config['calendar']
+		form.currpwd.default = config['pwd']
+		form.process(data=config)
+		# Render the config page and fill it with current (old) config values
+		return render_template("config.html", form=form)
+	# Validate the request data if there's a request to change the config
+	if form.validate_on_submit():
+		# We'll make a new config object
+		newconfig = {}
+		# And assign the user requested values to this new config object
+		newconfig['title'] = form.title.data
+		newconfig['desc'] = form.desc.data
+		newconfig['dispname'] = form.dispname.data
+		newconfig['mailaddr'] = form.mailaddr.data
+		newconfig['ppp'] = form.ppp.data
+		newconfig['dtformat'] = form.dtformat.data
+		newconfig['calendar'] = form.calendar.data
+		newpassword = form.newpwd.data
+		# Hash the password entered by user
+		currpwd = hashlib.md5(form.currpwd.data.encode('utf-8'))
+		# Check if the current password is the same as the one entered by user
+		if config['pwd'] != currpwd.hexdigest() :
+			# Warn user if password doesn't match!
+			flash(tr('Error! You have entered the wrong password, Please try again.'))
+			# And render the config page without changing the config
+			render_template("config.html", form=form), 401
+		# If admin requested to change the password
+		if newpassword != '' :
+			# Hash the new password
+			newpwd = hashlib.md5(newpassword.encode('utf-8'))
+			# Save hash to config object
+			newconfig['pwd'] = newpwd.hexdigest()
+		else :
+			# If admin didn't request to change the password then we'll use the current password in new config
+			newconfig['pwd'] = config['pwd']
+		# If everything goes well, we'll save the new config to the config file
 		# Open config file for output and erase its data
-		with open('config.json', 'w') as configFile: 
-			# We'll make a new config object
-			newconfig = {}
-			# And assign new values to this new config object
-			newconfig['title'] = request.form.get('title', type=str)
-			newconfig['desc'] = request.form.get('desc', type=str)
-			newconfig['dispname'] = request.form.get('dispname', default=tr('Admin'), type=str)
-			newconfig['mailaddr'] = request.form.get('mailaddr', type=str)
-			newconfig['ppp'] = request.form.get('ppp', default=10, type=int)
-			newconfig['dtformat'] = request.form.get('dtformat', default='%d %B %Y', type=str)
-			newconfig['calendar'] = request.form.get('calendar', default='Jalali', type=str)
-			# valid range for ppp is [1,100] (ppp means Posts Per Page)
-			if (newconfig['ppp'] < 1 or newconfig['ppp'] > 100) : 
-				# If ppp value was out of its valid range then set its value to 10
-				newconfig['ppp'] = 10
-			# Check password
-			if 'oldpwd' in request.form and 'newpwd' in request.form :
-				# Hash the password entered by admin
-				currpwd = hashlib.md5(request.form.get('oldpwd').encode('utf-8'))
-				# And check if the current password is the same as the one entered by admin
-				if  config['pwd'] == currpwd.hexdigest() :
-					# If admin requested to change the password 
-					if request.form.get('newpwd') != '' :
-						# Hash the new password
-						newpwd = hashlib.md5(request.form.get('newpwd').encode('utf-8'))
-						# Save hash to config object
-						newconfig['pwd'] = newpwd.hexdigest()
-					else :
-						# If admin didn't request to change the password then we'll use the old password in new config too
-						newconfig['pwd'] = config['pwd']
-				else :  # If password was wrong!
-					# Save old configs in the config file
-					# We have to do this because we opened the config file with 'w' parameter which means erase the file's data and open it for output!
-					json.dump(config, configFile)
-					# Ask user to enter the password again
-					flash(tr('Error! You have entered the wrong password, Please try again.'))
-					# Fill the page with old configs
-					return render_template("config.html", config=config)
-			# If everything goes well, we'll save new config to the config file
+		with open('config.json', 'w') as configFile:
+			# Save new config
 			json.dump(newconfig, configFile)
-			# Fill the page with new configs
-			return render_template("config.html", config=newconfig)
-	# Fill the page with old configs
-	return render_template("config.html", config=config)
+		# Render the config page and fill it with newconfig values
+		return render_template("config.html", form=form)
+	else: # If there was any problem during request validation
+		# Raise 'ValidationError' exception and render 400 'Bad Request' error page!
+		raise ValidationError
+		return render_template('400.html'), 400
 
 # This function handles viewing and saving comments
 @app.route("/comments", methods=['POST', 'GET'])
 @authentication_required
-def comments():
+def comments(): # NOTE: Need more test and review!
 	'''
 	Renders the comments page for a specific post and stores new comments in the database
 	'''
 	# Get 'postid' from the request
 	postid = request.args.get('postid', default=-1, type=int)
-	# Check if it's not a bad request!
-	if postid < 1 and not 'content' in request.form:
-		return ('', 400)
-	# If there's a new comment
-	if 'content' in request.form :
-		# Find the post which this new comment belongs to
-		post = dbpost.query.filter(dbpost.postid == postid).first()
-		# We'll check if it's not a bad request again!
-		if post is None :
-			return ('', 400)
+	# Find the post which this new comment belongs to
+	post = dbpost.query.filter(dbpost.postid == postid).first()
+	# Check if the post exists and it's not a bad request!
+	if post is None:
+		# Renders our custom 400 error page and returns error code 400 'Bad Request' to the client
+		return render_template('400.html'), 400
+	# Form object which holds the request data
+	# We'll set postid value to hidden field
+	form = CommentForm(request.form, postid=postid)
+	# Validate the request data
+	# and check if there's a new comment
+	if form.validate_on_submit():
 		# Get the data from the request
-		name = request.form.get('name')
-		mailaddr = request.form.get('mailaddr')
-		website = request.form.get('website')
-		content = request.form.get('content')
-		postid = request.form.get('postid', type=int)
+		name = form.name.data
+		mailaddr = form.mailaddr.data
+		website = form.website.data
+		content = form.content.data
+		postid = form.postid.data
 		gdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		# Create a new comment with the data provided above
 		comment = dbcomment(postid, content, gdatetime, name, website, mailaddr)
@@ -541,24 +607,20 @@ def comments():
 		post.comments = post.comments + 1
 		# Add this new comment to the database
 		db.session.add(comment)
-		
+		# Save changes to database
 		db.session.commit()
 	# Load all comments that belong to a specific post from the database
 	results = dbcomment.query.filter(dbcomment.pid == postid).all()
-	
 	# Load config file to the memory as config object
 	with open('config.json', 'r') as configFile :
 		config = json.load(configFile)
 		# Get date/time format
 		dtformat = config['dtformat']
-	
 	# Array of our comments (results)
 	comments = []
-	
 	# We'll use this loop to run the 'formatDateTime' function on each comment to format its date/time
 	for result in results :
 		comment = {} # A single comment (we'll assign its values below!)
-		
 		# And format date/time using the 'formatDateTime' function
 		comment['datetime'] = formatDateTime(result.__dict__['gdatetime'], dtformat)
 		# Rest is the same without any modification!
@@ -569,7 +631,7 @@ def comments():
 		comment['emailaddr'] = result.__dict__['emailaddr']
 		# Put this comment in our results
 		comments.append(comment)
-	return render_template("comments.html", comments = comments, postid = postid, admin=session['logged_in'])
+	return render_template("comments.html", comments=comments, postid=postid, form=form, admin=session['logged_in'])
 
 # This function handles removing comments 
 @app.route("/deletecomment", methods=['GET'])
@@ -618,13 +680,13 @@ def share():
 		if not post is None :
 			# we'll send the post to the client so its data will appear on the 'Share' page
 			return render_template("share.html", post = post)
-	# Return "Failure!"
-	return ('', 400)
+	# Render 400 error page and returns error code 400 'Bad Request' to the client
+	return render_template("400.html"), 400
 
 # This function handles 'Post' page which is used for saving new posts and editing existing posts in the database
 @app.route("/post", methods=['POST', 'GET'])
 @login_required
-def post():
+def post(): # NOTE: Need more test and review!
 	'''
 	Renders the post page and stores new or edited posts in the database
 	'''
@@ -638,27 +700,31 @@ def post():
 		db.session.commit()
 	# Get list of categories
 	categories = dbcategory.query.all()
-	# Make a new post!
-	post = {}
-	
 	# Get 'id' from the requested url, if it's empty we'll assign it '-1' 
 	id =  request.args.get('id', default = -1, type = int)
-	
-	# If user requests to edit a post then id will be more than zero
-	if id > -1 :
-		# Find the post which user requested to edit
-		post = dbpost.query.filter(dbpost.postid == id).first()
+	# Create an empty post we'll fill it later
+	# Find the post by its id
+	post = dbpost.query.filter(dbpost.postid == id).first()
+	# If there's a post with that id
+	if post is not None:
+		# Create a form and fill it with post data
+		form = PostForm(request.form, postid=post.postid, title=post.title, \
+			mediaaddr=post.mediaaddr, content=post.content, category=post.category)
+	else:
+		# Create an empty form
+		form = PostForm(request.form)
+	# Get list of all categories and put them in category select field
+	form.category.choices = [(cat.catid, cat.name) for cat in dbcategory.query.all()]
 	# If there's any data from user
-	if 'content' in request.form :
-		# Get the data from the request
-		category = request.form.get('cat')
-		title = request.form.get('title')
-		# We'll Markup.escape on content to escape possible html tags in the content
-		content = Markup.escape(request.form.get('content'))
-		mediaaddr = request.form.get('addr')
-		postid = request.form.get('id')
+	if form.validate_on_submit() :
+		# Get data from the request
+		category = form.category.data
+		title = form.title.data
+		content = form.content.data
+		mediaaddr = form.mediaaddr.data
+		postid = form.postid.data
 		# If postid is not empty then user is editing an existing post
-		if postid != '':
+		if postid :
 			# Find the post by its id
 			post = dbpost.query.filter(dbpost.postid == int(postid)).first()
 			# Find the hashtags in the post
@@ -678,7 +744,8 @@ def post():
 			# New posts don't have any comment when they're getting published!
 			comments = 0
 			# Create a new post with the provided data
-			newpost = dbpost(title=title, content=content, gdatetime=gdatetime, comments=comments, category=category, mediaaddr=mediaaddr)
+			newpost = dbpost(title=title, content=content, gdatetime=gdatetime, comments=comments \
+				, category=category, mediaaddr=mediaaddr)
 			# Save this new post to database
 			db.session.add(newpost)
 		# Save changes to the database
@@ -709,7 +776,8 @@ def post():
 			db.session.commit()
 		# Return to index and let the user see the new post
 		return redirect(url_for('index'))
-	return render_template("post.html", post=post, categories = categories, admin=session['logged_in'])
+	# Render the page and fill it with the available data
+	return render_template("post.html", categories = categories, form=form, admin=session['logged_in'])
 	
 # This function Removes the post from the database and execute the 'deleteTag' function for its hashtags and remove its comments
 def removepost(id: int):
@@ -751,6 +819,9 @@ def deletepost():
 	if 'id' in request.args :
 		# Get postid
 		id =  request.args.get('id', type = int)
+		# Return "Failure!" if 'id' is wrong!
+		if dbpost.query.filter(dbpost.postid == id).first() is None :
+			return ('', 400)
 		# Call the 'removepost' function to remove the post from the database
 		removepost(id)
 		# Return "Success!"
@@ -767,31 +838,21 @@ def show():
 	'''
 	# Get 'id' from the requested url, if it's empty we'll assign it '-1' 
 	id =  request.args.get('id', default = -1, type = int)
-	
-	# Check if it's not a bad request
-	if id < -1 :
-		# Return to main page and return status code 400 'Bad Request' if it's a bad request
-		return redirect(url_for('index'), code=400)
-	
 	# Find the post which user requested
 	result = dbpost.query.filter(dbpost.postid == id).first()
-	
 	# Check if the requested post exists
 	if result is None :
+		# Render 400 error page and returns error code 400 'Bad Request' to the client
 		return render_template('400.html'), 400
-	
 	# Find its category
 	category = dbcategory.query.filter(dbcategory.catid == result.category).first()
-	
 	# Load config file to the memory as config object
 	with open('config.json', 'r') as configFile :
 		config = json.load(configFile)
 		# Get date/time format
 		dtformat = config['dtformat']	
-	
 	# Create an empty post! We'll use it to send data to the client
 	post = {}
-	
 	# Replace hashtags with linked hashtags!
 	post['content'] = prcText(result.content, request.script_root)
 	# Format date/time
@@ -823,6 +884,11 @@ def newcategory():
 		# Return "Failure!" if name is empty
 		if name == '' :
 			return ('', 400)
+		# Warn user if a category with the same name already exists!
+		if dbcategory.query.filter(dbcategory.name == name).first() is not None :
+			flash(tr("Error! A category with the same name '%s' already exists. Please choose a new name!") % name)
+			# Return "Success!"
+			return ('', 200)
 		# Create a new category
 		category = dbcategory(name, order)
 		# Add this new category to the database
@@ -847,20 +913,31 @@ def editcategory():
 	if 'id' in request.args :
 		# Get new category name from the request
 		id =  request.args.get('id', type=int)
-		name = request.args.get('name')
+		name = request.args.get('name', type=str, default='')
 		order = 0
-		# Find the category
-		category = dbcategory.query.filter(dbcategory.catid == id)
-		# If the category exists
-		if category.count() > 0 :
-			# Change the category name to the one requested by user 
-			category.first().name = name
-			# Save changes to the database
-			db.session.commit()
+		# Return "Failure!" if 'id' is wrong!
+		if dbcategory.query.filter(dbcategory.catid == id).first() is None :
+			return ('', 400)
+		# Return "Failure!" if name is empty
+		if name == '' :
+			return ('', 400)
+		# Return "Success!" if there's no change!
+		if dbcategory.query.filter(dbcategory.catid == id).first().name == name :
 			# Return "Success!"
 			return ('', 200)
-	# Return "Failure!"
-	return ('', 400)
+		# Warn user if a category with the same name already exists!
+		if dbcategory.query.filter(dbcategory.name == name).first() is not None :
+			flash(tr("Error! A category with the same name '%s' already exists. Please choose a new name!") % name)
+			# Return "Success!"
+			return ('', 200)
+		# Find the category
+		category = dbcategory.query.filter(dbcategory.catid == id).first()
+		# Change the category name to the one requested by user 
+		category.name = name
+		# Save changes to the database
+		db.session.commit()
+		# Return "Success!"
+		return ('', 200)
 
 # This function handles removing the categories
 @app.route("/removecategory", methods=['GET'])
@@ -875,6 +952,9 @@ def removecategory():
 	if 'id' in request.args :
 		# Get the category id from the request
 		id = request.args.get('id', type=int)
+		# Return "Failure!" if 'id' is wrong!
+		if dbcategory.query.filter(dbcategory.catid == id).first() is None :
+			return ('', 400)
 		# Find the category by its id in the database and delete it
 		dbcategory.query.filter(dbcategory.catid == id).delete()
 		# After deleting the category we'll delete all the posts that belong to that category too
@@ -908,12 +988,26 @@ def addlink():
 	# This page requires admin privileges so we'll check if it's requested by admin or not by using @login_required
 	
 	# If it's not a bad request
-	if 'address' in request.args :
+	if 'address' in request.args \
+	and 'name' in request.args :
 		# Get the data from the request
-		name = request.args.get('name')
-		addr = request.args.get('address')
+		name = request.args.get('name', type=str)
+		addr = request.args.get('address', type=str)
 		address = urllib.parse.unquote(addr)
 		order = 0
+		# Return "Failure!" if name or address is empty
+		if name == '' or address == '' :
+			return ('', 400)
+		# Warn user if a link with the same name already exists!
+		if dblink.query.filter(dblink.name == name).first() is not None :
+			flash(tr("Error! A link with the same name '%s' already exists. Please choose a new name!") % name)
+			# Return "Success!"
+			return ('', 200)
+		# Warn user if a link with the same address already exists!
+		if dblink.query.filter(dblink.address == address).first() is not None:
+			flash(tr("Error! A link with the same address '%s' already exists. Please enter a new address!") % address)
+			# Return "Success!"
+			return ('', 200)
 		# Create a new link with the data provided by user
 		link = dblink(name, address, order)
 		# Add this new link to the database
@@ -938,10 +1032,33 @@ def editlink():
 	if 'id' in request.args :
 		# Get the data from the request
 		id =  request.args.get('id', type=int)
-		name = request.args.get('name')
-		addr = request.args.get('address')
+		name = request.args.get('name', type=str)
+		addr = request.args.get('address', type=str)
 		address = urllib.parse.unquote(addr)
 		order = 0
+		# Return "Failure!" if 'id' is wrong!
+		if dblink.query.filter(dblink.linkid == id).first() is None :
+			return ('', 400)
+		# Return "Failure!" if name or address is empty
+		if name == '' or address == '' :
+			return ('', 400)
+		# Return "Success!" if there's no change!
+		if dblink.query.filter(dblink.linkid == id).first().name == name \
+		and dblink.query.filter(dblink.linkid == id).first().address == address:
+			# Return "Success!"
+			return ('', 200)
+		# Warn user if a different link with the same name already exists!
+		if dblink.query.filter(dblink.linkid == id).first().name != name \
+		and dblink.query.filter(dblink.name == name).first() is not None :
+			flash(tr("Error! A link with the same name '%s' already exists. Please choose a new name!") % name)
+			# Return "Success!"
+			return ('', 200)
+		# Warn user if a different link with the same address already exists!
+		if dblink.query.filter(dblink.linkid == id).first().address != address \
+		and dblink.query.filter(dblink.address == address).first() is not None:
+			flash(tr("Error! A link with the same address '%s' already exists. Please enter a new address!") % address)
+			# Return "Success!"
+			return ('', 200)
 		# Find the link by its id
 		link = dblink.query.filter(dblink.linkid == id)
 		# If the link that we're looking for exists in the database
@@ -969,6 +1086,9 @@ def removelink():
 	if 'id' in request.args :
 		# Get link's id from the request
 		id = request.args.get('id', type=int)
+		# Return "Failure!" if 'id' is wrong!
+		if dblink.query.filter(dblink.linkid == id).first() is None :
+			return ('', 400)
 		# Find the link by its id and delete it
 		dblink.query.filter(dblink.linkid == id).delete()
 		# Save changes to the database
@@ -1037,7 +1157,7 @@ def install():
 	db.create_all()
 	# Create a category (to prevent errors!)
 	if dbcategory.query.count() == 0 :
-		category = dbcategory(tr('Other', 0))
+		category = dbcategory(tr('Other'), 0)
 		db.session.add(category)
 		# Save changes to the database
 		db.session.commit()
@@ -1065,8 +1185,9 @@ def install():
 		# Return this new config object so we can use it to fill the config page fields
 		return newconfig
 
+app.register_error_handler(ValidationError, error400)
+
 # If this module is the main program!
 if __name__ == '__main__':
 	# Run the program (Only for development purposes!)
 	app.run(debug=True)
-

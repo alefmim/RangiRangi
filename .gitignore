@@ -1,4 +1,4 @@
-config.json
-blog.db
-todo.txt
 .vscode/
+todo.txt
+blog*.db
+config*.json

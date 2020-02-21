@@ -18,42 +18,41 @@
 	</div>
 	
 	<form class="setupform" action="{{ request.script_root }}/config" method="post" accept-charset="utf-8">
-	
+		
+		{{ form.csrf_token }}
+		
 		<span class="text">عنوان وبلاگ :</span>
-		<input type="text" name="title" value="{{ config['title'] }}" required>
+		{{ form['title'] }}
 		
 		<span class="text">شرح وبلاگ :</span>
-		<input type="text" name="desc" value="{{ config['desc'] }}" required>
+		{{ form['desc'] }}
 		
 		<span class="text">نام کاربری :</span>
-		<input type="text" name="username" value="admin" disabled required>
+		<input type="text" name="username" value="admin" minlength="3" maxlength="32" disabled required>
 		
 		<span class="text">گذرواژه ی فعلی :</span>
-		<input type="password" name="oldpwd" value="" required>
+		{{ form['currpwd'] }}
 		
 		<span class="text">گذرواژه ی جدید* :</span>
-		<input type="password" name="newpwd" value="" id="pwd1" onkeyup='check();'>
-		
+		{{ form['newpwd'] }}
+
 		<span class="text">گذرواژه ی جدید (تکرار):</span>
-		<input type="password" name="confirmpwd" value="" id="pwd2" onkeyup='check();'>
+		{{ form['confirmpwd'] }}
 		
 		<span class="text">نام نمایشی* :</span>
-		<input type="text" name="dispname" value="{{ config['dispname'] }}" required>
+		{{ form['dispname'] }}
 		
 		<span class="text">پست الکترونیک :</span>
-		<input type="email" name="mailaddr" value="{{ config['mailaddr'] }}" required>
+		{{ form['mailaddr'] }}
 		
 		<span class="text">تعداد پست ها در هر صفحه :</span>
-		<input type="text" name="ppp" value="{{ config['ppp'] }}" onkeyup='check();' required>
+		{{ form['ppp'] }}
 		
 		<span class="text">قالب نمایش تاریخ و زمان* :</span>
-		<input type="text" id="format" name="dtformat" value="{{ config['dtformat'] }}" required>
+		{{ form['dtformat'] }}
 		
 		<span class="text">تقویم : </span>
-		<select name="calendar">
-			<option value="Gregorian" {% if config['calendar'] == 'Gregorian' %} selected {% endif %}>میلادی</option>
-			<option value="Jalali" {% if config['calendar'] == 'Jalali' %} selected {% endif %}>جلالی</option>
-		</select> 
+		{{ form['calendar'] }}
 		
 		<button type="submit" class="bluebtn" id="submit" onclick='return check();'>ارسال</button>
 		
