@@ -666,11 +666,11 @@ def index():
     # Get the hashtag from the request
     tag = request.args.get('tag', default='', type=str)
     # Find the hashtag in database
-    t = dbtag.query.filter(dbtag.keyword == tag)
+    t = dbtag.query.filter(dbtag.keyword == tag).first()
     # If it's not a bad request and hashtag exists in the database
-    if t.count() != 0:
+    if t is not None:
         # Increase its popularity by 1
-        t.first().popularity = t.first().popularity + 1
+        t.popularity = t.popularity + 1
         # Save changes to the database
         db.session.commit()
     # Find all categories and save it to 'categories' array
