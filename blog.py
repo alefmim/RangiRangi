@@ -80,6 +80,8 @@ limiter = Limiter(
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 # Because we don't need it
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
 # Assign a 32 bytes length random value to app.secret_key
 app.secret_key = os.urandom(32)
 app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -560,7 +562,6 @@ def deleteTag(hashTag: str):
     db.session.commit()
 
 
-# CRITICAL: Change session['logged_in'] to False
 # We'll use this decorator before any function
 # that requires to check user privileges
 def authentication_required(func):
@@ -578,7 +579,7 @@ def authentication_required(func):
         # If user didn't login yet then
         # we'll save (logged_in = False) for his session!
         if not 'logged_in' in session:
-            session['logged_in'] = True
+            session['logged_in'] = False
         return func(*args, **kwargs)
 
     return authenticate
@@ -604,6 +605,15 @@ def login_required(func):
         return func(*args, **kwargs)
 
     return checkPrivileges
+
+
+# Add some headers to response
+@app.after_request
+def add_header(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
 
 
 # 400 error page
