@@ -376,29 +376,29 @@ def prcText(rawText: str, url: str) -> str:
     '''
     Replaces all hashtags in the 'rawText' with linked hashtags 
     (Adds html <a> tag to all hashtags in the 'rawText' 
-	and links them to their page!) for example calling 
-	prcText('hello #dear user!', 'https://www.site.com/blog/') 
-	will return the following string :
+    and links them to their page!) for example calling 
+    prcText('hello #dear user!', 'https://www.site.com/blog/') 
+    will return the following string :
     "hello 
-	<a href='https://www.site.com/blog/?tag=dear' class='hashtag'>#dear</a>
-	user!"
+    <a href='https://www.site.com/blog/?tag=dear' class='hashtag'>#dear</a>
+    user!"
 
     Parameters
     ----------
     rawText : str
             The raw string (usually post content which is stored in database) 
-			which may contain some hashtags
+            which may contain some hashtags
     url : str
             Address of our script including domain name
-			(for example : https://www.site.com/blog/)
+            (for example : https://www.site.com/blog/)
             Send request.script_root as its value
-			if you don't know how to use it
+            if you don't know how to use it
 
     Returns
     -------
     str
             a string containing 'rawText' content but hashtags 
-			are replaced with linked (<a href="hashtag page">) hashtags!
+            are replaced with linked (<a href="hashtag page">) hashtags!
     '''
     # Find all hashtags using regex
     hashTags = re.findall(r"#(\w+)", rawText)
@@ -426,16 +426,16 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
     ----------
     strDateTime : str
             a string which must contain a Date/Time 
-			in '%Y-%m-%d %H:%M:%S' format
+            in '%Y-%m-%d %H:%M:%S' format
     strFormat : str
             a string which must contain a format string 
-			like '%Y-%m-%d %H:%M:%S'
+            like '%Y-%m-%d %H:%M:%S'
 
     Returns
     -------
     str
             a string which contains a date/time equal to 
-			'strDateTime' but formatted like 'strFormat'
+            'strDateTime' but formatted like 'strFormat'
     '''
     # Check if Jalali Calendar is enabled or not
     # We'll try opening the config file
@@ -524,7 +524,7 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
 def deleteTag(hashTag: str):
     '''
     Checks a hashtag's frequency in the database
-	And performs the following tasks:
+    And performs the following tasks:
     If it's greater than 1 then decrease it by 1
     Else if it's less or equal to 1 then remove the hashtag from the database
 
@@ -532,7 +532,7 @@ def deleteTag(hashTag: str):
     ----------
     hashtag : str
             a string which must contain only a hashtag without # 
-			(for example : 'blog')
+            (for example : 'blog')
     '''
     # Find the hashtag in database using its name
     tag = dbtag.query.filter(dbtag.keyword == hashTag)
@@ -560,12 +560,12 @@ def deleteTag(hashTag: str):
 def authentication_required(func):
     '''
     A decorator which is used before any function 
-	that requires to check user privileges and 
-	check if user has admin privileges or not! 
-	if user doesn't have admin privileges then 
-	we'll continue serving them as a user and not admin
+    that requires to check user privileges and 
+    check if user has admin privileges or not! 
+    if user doesn't have admin privileges then 
+    we'll continue serving them as a user and not admin
     Use this decorator before any function 
-	that requires to check session['logged_in'] value.
+    that requires to check session['logged_in'] value.
     '''
     @functools.wraps(func)
     def authenticate(*args, **kwargs):
@@ -583,9 +583,9 @@ def authentication_required(func):
 def login_required(func):
     '''
     A decorator which is used before any function 
-	that requires admin privileges to get executed!
+    that requires admin privileges to get executed!
     if user doesn't have admin privileges then 
-	we'll stop serving them and show them 403 error page
+    we'll stop serving them and show them 403 error page
     instead of executing the requested function!
     '''
     @functools.wraps(func)
@@ -605,7 +605,7 @@ def login_required(func):
 def error400(e):
     '''
     Renders our custom 400 error page and 
-	returns error code 400 'Bad Request' to the client
+    returns error code 400 'Bad Request' to the client
     '''
     return render_template('400.html'), 400
 
@@ -615,7 +615,7 @@ def error400(e):
 def error404(e):
     '''
     Renders our custom 404 error page and 
-	returns error code 404 'Not Found' to the client
+    returns error code 404 'Not Found' to the client
     '''
     return render_template('404.html'), 404
 
@@ -627,7 +627,7 @@ def index():
     '''
     Renders the main page or Calls install() if blog is not configured yet
     It also handles increasing the hashtags popularity 
-	if user clicks on a specific hashtag and requests its page
+    if user clicks on a specific hashtag and requests its page
     '''
     # Check if config file exists
     # (if application is already installed and configured)
@@ -850,7 +850,7 @@ def config():  # NOTE: Need more test!
 def comments():  # NOTE: Need more test and review!
     '''
     Renders the comments page for a specific post 
-	and stores new comments in the database
+    and stores new comments in the database
     '''
     # Get 'postid' from the request
     postid = request.args.get('postid', default=-1, type=int)
@@ -1100,7 +1100,7 @@ def removepost(id: int):
     ----------
     id : int
             Post ID, We'll use this ID (Primary Key) 
-			to find the post in database 
+            to find the post in database 
     '''
     # Find the post in the database
     post = dbpost.query.filter(dbpost.postid == id)
@@ -1127,7 +1127,7 @@ def removepost(id: int):
 def deletepost():
     '''
     Gets Post ID from the request and calls removepost(id) 
-	to remove that specific post from the database 
+    to remove that specific post from the database 
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
@@ -1466,17 +1466,17 @@ def removelink():
 # This function handles the login process and user authentication
 # Limit the number of allowed requests to
 @app.route("/login", methods=['POST'])
-@limiter.limit("3/minute")  # 3	per minute
-@limiter.limit("15/hour")  # 15	per hour
-@limiter.limit("45/day")  # 45	per day
+@limiter.limit("3/minute")  # 3    per minute
+@limiter.limit("15/hour")  # 15    per hour
+@limiter.limit("45/day")  # 45    per day
 def login():  # NOTE: Need more test!
     '''
     Gets the password sent by user and compare it 
-	with the password stored in the config file
+    with the password stored in the config file
     If they're the same then sets session['logged_in'] value to true 
-	which will grant user admin privileges. 
-	(the password which is stored in the config file is hashed 
-	using the md5 algorithm!)
+    which will grant user admin privileges. 
+    (the password which is stored in the config file is hashed 
+    using the md5 algorithm!)
     '''
     # Create login form
     form = LoginForm(request.form)
