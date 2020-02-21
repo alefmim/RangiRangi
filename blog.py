@@ -82,13 +82,15 @@ db = SQLAlchemy(app)
 
 # Order Columns are currently not being used but we'll use them in the future!
 class dbcategory(db.Model):  # Category Object (Categories Table)
+    # Category ID (Primary Key)
     catid = db.Column('catid',
                       db.Integer,
                       primary_key=True,
-                      autoincrement=True)  # Category ID (Primary Key)
-    name = db.Column('name', db.String(32), nullable=False,
-                     unique=True)  # Category Name
-    order = db.Column('order', db.Integer, nullable=False)  # Category Order
+                      autoincrement=True)
+    # Category Name
+    name = db.Column('name', db.String(32), nullable=False, unique=True)
+    # Category Order
+    order = db.Column('order', db.Integer, nullable=False)
     # Defining a foreign key (backref to category in posts table!)
     categories = db.relationship('dbpost',
                                  backref=db.backref("dbcategory", lazy=True))
@@ -99,19 +101,22 @@ class dbcategory(db.Model):  # Category Object (Categories Table)
 
 
 class dbpost(db.Model):  # Post Object (Posts Table)
+    # Post ID (Primary Key)
     postid = db.Column('postid',
                        db.Integer,
                        primary_key=True,
-                       autoincrement=True)  # Post ID (Primary Key)
+                       autoincrement=True)
+    # Defining a foreign key
     category = db.Column('category',
                          db.Integer,
                          db.ForeignKey('dbcategory.catid'),
-                         nullable=False)  # Defining a foreign key
-    title = db.Column('title', db.String(32), nullable=True)  # Post Title
-    content = db.Column('content', db.String(512),
-                        nullable=False)  # Post Content
-    gdatetime = db.Column('datetime', db.String(24),
-                          nullable=False)  # Post Date/Time
+                         nullable=False)
+    # Post Title
+    title = db.Column('title', db.String(32), nullable=True)
+    # Post Content
+    content = db.Column('content', db.String(512), nullable=False)
+    # Post Date/Time
+    gdatetime = db.Column('datetime', db.String(24), nullable=False)
     # Number of comments on each post
     comments = db.Column('comments', db.Integer, nullable=False)
     # Multimedia File (Image) Address
@@ -131,18 +136,20 @@ class dbpost(db.Model):  # Post Object (Posts Table)
 
 
 class dbcomment(db.Model):  # Comment Object (Comments Table)
+    # Comment ID (Primary Key)
     cmtid = db.Column('commentid',
                       db.Integer,
                       primary_key=True,
-                      autoincrement=True)  # Comment ID (Primary Key)
+                      autoincrement=True)
+    # Post ID (Foreign Key)
     pid = db.Column('postid',
                     db.Integer,
                     db.ForeignKey('dbpost.postid'),
-                    nullable=False)  # Post ID (Foreign Key)
-    content = db.Column('content', db.String(256),
-                        nullable=False)  # Comment Content
-    gdatetime = db.Column('datetime', db.String(20),
-                          nullable=False)  # Comment Date/Time
+                    nullable=False)
+    # Comment Content
+    content = db.Column('content', db.String(256), nullable=False)
+    # Comment Date/Time
+    gdatetime = db.Column('datetime', db.String(20), nullable=False)
     # Comment's Author's Name
     name = db.Column('name', db.String(24), nullable=False)
     # Comment's Author's Website
@@ -161,16 +168,17 @@ class dbcomment(db.Model):  # Comment Object (Comments Table)
 
 
 class dbtag(db.Model):  # Tag Object (Tags Table)
+    # Tag ID (Primary Key)
     tagid = db.Column('tagid',
                       db.Integer,
                       primary_key=True,
-                      autoincrement=True)  # Tag ID (Primary Key)
-    keyword = db.Column('keyword', db.String(512), nullable=False,
-                        unique=True)  # Tag Keyword
-    frequency = db.Column('frequency', db.Integer,
-                          nullable=False)  # Tag Frequency
-    popularity = db.Column('popularity', db.Integer,
-                           nullable=False)  # Tag Popularity
+                      autoincrement=True)
+    # Tag Keyword
+    keyword = db.Column('keyword', db.String(512), nullable=False, unique=True)
+    # Tag Frequency
+    frequency = db.Column('frequency', db.Integer, nullable=False)
+    # Tag Popularity
+    popularity = db.Column('popularity', db.Integer, nullable=False)
 
     def __init__(self, keyword: str, frequency: int, popularity: int):
         self.keyword = keyword  # Tag Keyword
@@ -179,15 +187,17 @@ class dbtag(db.Model):  # Tag Object (Tags Table)
 
 
 class dblink(db.Model):  # Link Object (Links Table)
+    # Link ID (Primary Key)
     linkid = db.Column('linkid',
                        db.Integer,
                        primary_key=True,
-                       autoincrement=True)  # Link ID (Primary Key)
-    name = db.Column('name', db.String(24), nullable=False,
-                     unique=True)  # Link Name
-    address = db.Column('address', db.String(256), nullable=False,
-                        unique=True)  # Link Address
-    order = db.Column('order', db.Integer, nullable=False)  # Link Order
+                       autoincrement=True)
+    # Link Name
+    name = db.Column('name', db.String(24), nullable=False, unique=True)
+    # Link Address
+    address = db.Column('address', db.String(256), nullable=False, unique=True)
+    # Link Order
+    order = db.Column('order', db.Integer, nullable=False)
 
     def __init__(self, name: str, address: str, order: int):
         self.name = name  # Link Name
