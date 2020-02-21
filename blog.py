@@ -38,15 +38,17 @@ from wtforms.validators import (
 	Length,
 	NumberRange,
 	AnyOf,
+	EqualTo,
 	ValidationError
 )
 from wtforms import (
 	SelectField,
 	StringField,
-	IntegerField
+	IntegerField,
+	PasswordField
 )
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from flask_wtf import FlaskForm
+from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
@@ -67,6 +69,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Because we don't need it
 # Assign a 32 bytes length random value to app.secret_key
 app.secret_key = os.urandom(32)
 app.wsgi_app = ProxyFix(app.wsgi_app)
+csrf = CSRFProtect(app)
 db = SQLAlchemy(app)
 
 # Order Columns are currently not being used but we'll use them in the future!
@@ -142,36 +145,6 @@ class dblink(db.Model):
 		self.address = address	# Link Address
 		self.order = order	# Link Order
 
-# Config page form
-class ConfigForm (FlaskForm):
-	
-	title = StringField('title', validators=[DataRequired(), Length(min=1, max=64)])
-	desc = StringField('desc', validators=[DataRequired(), Length(min=1, max=256)])
-	dispname = StringField('dispname', validators=[DataRequired(), Length(min=1, max=32)])
-	mailaddr = StringField('mailaddr', validators=[DataRequired(), Email(), Length(min=3, max=254)])
-	dtformat = StringField('dtformat', validators=[DataRequired(), Length(min=2, max=32)])
-	calendar = StringField('calendar', validators=[DataRequired(), AnyOf(values=['Gregorian', 'Jalali'])])
-	currpwd = StringField('currpwd', validators=[DataRequired(), Length(min=5, max=128)])
-	newpwd = StringField('newpwd', validators=[Optional(), Length(min=8, max=128)])
-	ppp = IntegerField('ppp', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)])
-
-# Comment page form
-class CommentForm (FlaskForm):
-	
-	name = StringField('name', validators=[DataRequired(), Length(min=1, max=24)])
-	mailaddr = StringField('mailaddr', validators=[Optional(), Email(), Length(min=3, max=40)])
-	website = StringField('website', validators=[Optional(), URL(), Length(min=3, max=40)])
-	content = StringField('content', validators=[DataRequired(), Length(min=1, max=255)])
-	postid = IntegerField('postid', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)])
-
-# Post page form
-class PostForm (FlaskForm):
-	title = StringField('title', validators=[DataRequired(), Length(min=1, max=32)])
-	content = StringField('content', validators=[DataRequired(), Length(min=1, max=256)])
-	mediaaddr = StringField('addr', validators=[Optional(), Length(min=1, max=256)])
-	cat = StringField('cat', validators=[DataRequired()])
-	id = IntegerField('id', validators=[Optional(), NumberRange(min=1, max=9999999999999999)])
-
 # This function will look for translation of the given string in translations.json file
 def tr(text: str) -> str:
 	''' Looks for translation of 'text' in translations.json file
@@ -202,6 +175,37 @@ def tr(text: str) -> str:
 	except KeyError : # This exception means there's no match for given string
 		# So We'll return the given persian/farsi text
 		return text
+
+# Config page form
+class ConfigForm (FlaskForm):
+	
+	title = StringField('title', validators=[DataRequired(), Length(min=1, max=64)])
+	desc = StringField('desc', validators=[DataRequired(), Length(min=1, max=256)])
+	dispname = StringField('dispname', validators=[DataRequired(), Length(min=1, max=32)])
+	mailaddr = StringField('mailaddr', validators=[DataRequired(), Email(), Length(min=3, max=254)])
+	dtformat = StringField('dtformat', validators=[DataRequired(), Length(min=2, max=32)])
+	calendar = SelectField('calendar', validators=[DataRequired()], choices=[('Gregorian', tr('Gregorian')), ('Jalali', tr('Jalali'))])
+	currpwd = PasswordField('currpwd', validators=[InputRequired(), Length(min=5, max=128)])
+	newpwd = PasswordField('newpwd', validators=[Optional(), Length(min=8, max=128), EqualTo('confirmpwd')], id='pwd1')
+	confirmpwd = PasswordField('confirmpwd', validators=[Optional(), Length(min=8, max=128), EqualTo('newpwd')], id='pwd2')
+	ppp = IntegerField('ppp', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)])
+
+# Comment page form
+class CommentForm (FlaskForm):
+	
+	name = StringField('name', validators=[DataRequired(), Length(min=1, max=24)])
+	mailaddr = StringField('mailaddr', validators=[Optional(), Email(), Length(min=3, max=40)])
+	website = StringField('website', validators=[Optional(), URL(), Length(min=3, max=40)])
+	content = StringField('content', validators=[DataRequired(), Length(min=1, max=255)])
+	postid = IntegerField('postid', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)])
+
+# Post page form
+class PostForm (FlaskForm):
+	title = SelectField('title', validators=[DataRequired(), Length(min=1, max=32)])
+	content = StringField('content', validators=[DataRequired(), Length(min=1, max=256)])
+	mediaaddr = StringField('addr', validators=[Optional(), Length(min=1, max=256)])
+	category = SelectField('category', coerce=int, validators=[DataRequired()])
+	id = IntegerField('id', validators=[Optional(), NumberRange(min=1, max=9999999999999999)])
 
 # This function replaces all hashtags in 'rawText' with linked hashtags 
 # 'url' must only contain domain name and script path (send request.script_root as its value!)
@@ -337,7 +341,7 @@ def deleteTag(hashTag: str):
 	db.session.commit()
 
 # We'll use this decorator before any function that requires to check user privileges
-def authentication_required(func):
+def authentication_required(func): # CRITICAL: change session['logged_in'] to False
 	'''
 	A decorator which is used before any function that requires to check user privileges
 	and check if user has admin privileges or not! if user doesn't have admin privileges
@@ -348,7 +352,7 @@ def authentication_required(func):
 	def authenticate(*args, **kwargs):
 		# If user didn't login yet then we'll save (logged_in = False) for his session!
 		if not 'logged_in' in session :
-			session['logged_in'] = False
+			session['logged_in'] = True
 		return func(*args, **kwargs)
 	return authenticate
 
@@ -495,10 +499,10 @@ def page():
 	# Render results
 	return render_template("page.html", posts=posts, c=c, mimetype="text/html", admin=session['logged_in'])
 
-# This function handles config page and configurations 
+# This function handles config page and configurations
 @app.route("/config", methods=['POST', 'GET'])
 @login_required
-def config(): # TODO: Rewrite this function and use flask-wtf to render the form.
+def config(): # NOTE: Need more test!
 	'''
 	Renders the config page and stores new configs in the config file
 	'''
@@ -511,11 +515,26 @@ def config(): # TODO: Rewrite this function and use flask-wtf to render the form
 		config = json.load(configFile)
 	# Form object which holds the request data 
 	form = ConfigForm(request.form)
+	
+	if request.method == 'GET':
+		# Fill the form with current config
+		form.title.default = config['title']
+		form.desc.default = config['desc']
+		form.dispname.default = config['dispname']
+		form.mailaddr.default = config['mailaddr']
+		form.ppp.default = config['ppp']
+		form.dtformat.default = config['dtformat']
+		form.calendar.default = config['calendar']
+		form.currpwd.default = config['pwd']
+		form.process(data=config)
+		# Render the config page and fill it with current (old) config values
+		return render_template("config.html", form=form)
 	# Validate the request data
 	if form.validate_on_submit():
 		# We'll make a new config object
 		newconfig = {}
 		# And assign the user requested values to this new config object
+		# form.process(formdata=request.form)
 		newconfig['title'] = form.title.data
 		newconfig['desc'] = form.desc.data
 		newconfig['dispname'] = form.dispname.data
@@ -531,24 +550,25 @@ def config(): # TODO: Rewrite this function and use flask-wtf to render the form
 			# Warn user if password is wrong!
 			flash(tr('Error! You have entered the wrong password, Please try again.'))
 			# And render the config page without changing the config
-			render_template("config.html", config=config, form=form), 401
+			render_template("config.html", form=form), 401
 		# If admin requested to change the password
-		if len(newpassword) >= 8 :
+		if newpassword != '' :
 			# Hash the new password
-			newpwd = hashlib.md5(newpassword.data.encode('utf-8'))
+			newpwd = hashlib.md5(newpassword.encode('utf-8'))
 			# Save hash to config object
 			newconfig['pwd'] = newpwd.hexdigest()
 		else :
 			# If admin didn't request to change the password then we'll use the current password in new config
 			newconfig['pwd'] = config['pwd']
-			# If everything goes well, we'll save the new config to the config file
-			# Open config file for output and erase its data
-			with open('config.json', 'w') as configFile:
-				json.dump(newconfig, configFile)
-			# Render the config page and fill it with newconfig values
-			return render_template("config.html", config=newconfig, form=form)
-	# Render the config page and fill it with current (old) config values
-	return render_template("config.html", config=config, form=form)
+		# If everything goes well, we'll save the new config to the config file
+		# Open config file for output and erase its data
+		with open('config.json', 'w') as configFile:
+			json.dump(newconfig, configFile)
+		# Render the config page and fill it with newconfig values
+		return render_template("config.html", form=form)
+	else:
+		raise ValidationError
+		return render_template('400.html'), 400
 
 # This function handles viewing and saving comments
 @app.route("/comments", methods=['POST', 'GET'])
