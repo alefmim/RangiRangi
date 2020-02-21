@@ -41,6 +41,10 @@ from wtforms.validators import (
 	EqualTo,
 	ValidationError
 )
+from wtforms.widgets import (
+	HiddenInput,
+	TextArea
+)
 from wtforms import (
 	SelectField,
 	StringField,
@@ -197,15 +201,15 @@ class CommentForm (FlaskForm):
 	mailaddr = StringField('mailaddr', validators=[Optional(), Email(), Length(min=3, max=40)])
 	website = StringField('website', validators=[Optional(), URL(), Length(min=3, max=40)])
 	content = StringField('content', validators=[DataRequired(), Length(min=1, max=255)])
-	postid = IntegerField('postid', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)])
+	postid = IntegerField('postid', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)], widget=HiddenInput())
 
 # Post page form
 class PostForm (FlaskForm):
-	title = SelectField('title', validators=[DataRequired(), Length(min=1, max=32)])
-	content = StringField('content', validators=[DataRequired(), Length(min=1, max=256)])
-	mediaaddr = StringField('addr', validators=[Optional(), Length(min=1, max=256)])
 	category = SelectField('category', coerce=int, validators=[DataRequired()])
-	id = IntegerField('id', validators=[Optional(), NumberRange(min=1, max=9999999999999999)])
+	title = StringField('title', validators=[DataRequired(), Length(min=1, max=32)])
+	content = StringField('content', validators=[DataRequired(), Length(min=1, max=256)], widget=TextArea(), render_kw={'rows': 5})
+	mediaaddr = StringField('mediaaddr', validators=[Optional(), Length(min=1, max=256)])
+	postid = IntegerField('postid', validators=[Optional(), NumberRange(min=1, max=9999999999999999)], widget=HiddenInput())
 
 # This function replaces all hashtags in 'rawText' with linked hashtags 
 # 'url' must only contain domain name and script path (send request.script_root as its value!)
@@ -574,7 +578,7 @@ def config(): # NOTE: Need more test!
 # This function handles viewing and saving comments
 @app.route("/comments", methods=['POST', 'GET'])
 @authentication_required
-def comments(): # TODO: Rewrite this function and use flask-wtf to render the form.
+def comments(): # NOTE: Need more test and review!
 	'''
 	Renders the comments page for a specific post and stores new comments in the database
 	'''
@@ -587,7 +591,8 @@ def comments(): # TODO: Rewrite this function and use flask-wtf to render the fo
 		# Renders our custom 400 error page and returns error code 400 'Bad Request' to the client
 		return render_template('400.html'), 400
 	# Form object which holds the request data
-	form = CommentForm(request.form)
+	# We'll set postid value to hidden field
+	form = CommentForm(request.form, postid=postid)
 	# Validate the request data
 	# and check if there's a new comment
 	if form.validate_on_submit():
@@ -595,7 +600,7 @@ def comments(): # TODO: Rewrite this function and use flask-wtf to render the fo
 		name = form.name.data
 		mailaddr = form.mailaddr.data
 		website = form.website.data
-		content = Markup.escape(form.content.data)
+		content = form.content.data
 		postid = form.postid.data
 		gdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		# Create a new comment with the data provided above
@@ -683,7 +688,7 @@ def share():
 # This function handles 'Post' page which is used for saving new posts and editing existing posts in the database
 @app.route("/post", methods=['POST', 'GET'])
 @login_required
-def post(): # TODO: Rewrite this function and use flask-wtf to render the form.
+def post(): # NOTE: Need more test and review!
 	'''
 	Renders the post page and stores new or edited posts in the database
 	'''
@@ -702,26 +707,24 @@ def post(): # TODO: Rewrite this function and use flask-wtf to render the form.
 	# Create an empty post we'll fill it later
 	# Find the post by its id
 	post = dbpost.query.filter(dbpost.postid == id).first()
-	# Form object which holds the request data
-	form = PostForm(request.form)
-	#form.cat.choices = [(cat.catid, cat.name) for cat in dbcategory.query.order_by(dbcategory.catid)]
-	#form.category.choices = [(cat.catid, cat.catid) for cat in dbcategory.query.all()]
+	# If there's a post with that id
+	if post is not None:
+		# Create a form and fill it with post data
+		form = PostForm(request.form, postid=post.postid, title=post.title, \
+			mediaaddr=post.mediaaddr, content=post.content, category=post.category)
+	else:
+		# Create an empty form
+		form = PostForm(request.form)
+	# Get list of all categories and put them in category select field
+	form.category.choices = [(cat.catid, cat.name) for cat in dbcategory.query.all()]
 	# If there's any data from user
 	if form.validate_on_submit() :
-		# Get the data from the request
-		# category = dict(form.category.choices).get(form.category.data)
-		# category = request.form.get('cat')
-		cat = form.cat.data
-		# Check if category exists!
-		if dbcategory.query.filter(dbcategory.name == cat).first() is None :
-			# Return "Failure!" if category doesn't exist!
-			return ('', 400)
+		# Get data from the request
+		category = form.category.data
 		title = form.title.data
-		# We'll Markup.escape on content to escape possible html tags in the content
-		content = Markup.escape(form.content.data)
+		content = form.content.data
 		mediaaddr = form.mediaaddr.data
-		postid = form.id.data
-		print(postid)
+		postid = form.postid.data
 		# If postid is not empty then user is editing an existing post
 		if postid :
 			# Find the post by its id
@@ -732,7 +735,7 @@ def post(): # TODO: Rewrite this function and use flask-wtf to render the form.
 			for hashTag in set(hashTags):
 				deleteTag(hashTag)
 			# Save the data from request in the existing post
-			post.category = dbcategory.query.filter(dbcategory.name == cat).first().catid
+			post.category = category
 			post.title = title
 			post.mediaaddr = mediaaddr
 			post.content = content
@@ -744,7 +747,7 @@ def post(): # TODO: Rewrite this function and use flask-wtf to render the form.
 			comments = 0
 			# Create a new post with the provided data
 			newpost = dbpost(title=title, content=content, gdatetime=gdatetime, comments=comments \
-				, category=dbcategory.query.filter(dbcategory.name == cat).first().catid, mediaaddr=mediaaddr)
+				, category=category, mediaaddr=mediaaddr)
 			# Save this new post to database
 			db.session.add(newpost)
 		# Save changes to the database
@@ -775,6 +778,7 @@ def post(): # TODO: Rewrite this function and use flask-wtf to render the form.
 			db.session.commit()
 		# Return to index and let the user see the new post
 		return redirect(url_for('index'))
+	# Render the page and fill it with the available data
 	return render_template("post.html", post=post, categories = categories, form=form, admin=session['logged_in'])
 	
 # This function Removes the post from the database and execute the 'deleteTag' function for its hashtags and remove its comments
