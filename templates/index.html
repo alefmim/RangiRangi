@@ -305,7 +305,8 @@
 		<div class="items">
 			<form action="{{ request.script_root }}/login" method="post">
 				<div class="item" onclick="document.getElementById('pwInput').focus()">گذرواژه : 
-					<input type="password" name="pwd" id="pwInput" required>
+					{{ form.csrf_token }}
+					{{ form['pwd'] }}
 				</div>
 				<div class="item">
 					<button type="submit" id="btnLogin">ورود »</button>

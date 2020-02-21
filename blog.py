@@ -212,6 +212,11 @@ class PostForm (FlaskForm):
 	mediaaddr = StringField('mediaaddr', validators=[Optional(), Length(min=1, max=256)], render_kw={'maxlength': 256})
 	postid = IntegerField('postid', validators=[Optional(), NumberRange(min=1, max=9999999999999999)], widget=HiddenInput())
 
+# Login form
+class LoginForm (FlaskForm):
+	pwd = PasswordField('pwd', validators=[InputRequired(), Length(min=5, max=128)] \
+		, id='pwInput', render_kw={'minlength' : 5, 'maxlength': 128})
+
 # This function replaces all hashtags in 'rawText' with linked hashtags 
 # 'url' must only contain domain name and script path (send request.script_root as its value!)
 def prcText(rawText: str, url: str) -> str:
@@ -431,7 +436,10 @@ def index():
 	# Find all links and save it to 'links' array
 	links = dblink.query.order_by(dblink.order).all()
 	# Render the page with the provided data!
-	return render_template("index.html", config = config, categories = categories, favtags = favtags, frqtags = frqtags, links = links, admin=session['logged_in'])
+	# Create login form
+	form = LoginForm()
+	return render_template("index.html", config = config, categories = categories, favtags = favtags \
+		, frqtags = frqtags, links = links, form = form, admin=session['logged_in'])
 
 # This function sends the posts to the client
 @app.route("/page", methods=['GET'])
@@ -1106,31 +1114,32 @@ def removelink():
 @limiter.limit("3/minute") 		# 3	per minute
 @limiter.limit("15/hour")		# 15	per hour
 @limiter.limit("45/day")		# 45	per day
-def login():
+def login(): # NOTE: Need more test!
 	'''
 	Gets the password sent by user and compare it with the password stored in the config file
 	If they're the same then sets session['logged_in'] value to true which will grant user
 	admin privileges. (the password which is stored in the config file is hashed using the md5 algorithm!)
 	'''
-	# If there's any login attempt without providing password then we'll redirect it to the main page and ignore it!
-	if not 'pwd' in request.form :
-		return redirect(url_for('index'))
-	# Open config file to check the password stored in it
-	with open('config.json', 'r') as configFile :
-		# Load the config file to config object
-		config = json.load(configFile)
-		# Get password from the request
-		pwd = request.form.get('pwd')
-		# Hash the password
-		pwd = hashlib.md5(pwd.encode('utf-8')).hexdigest()
-		# If the password entered by the user is the same as the one in our config file 
-		if config['pwd'] == pwd :
-			 # Login was successful and we'll set 'logged_in' to true in our session, this will grant the user admin privileges!
-			session['logged_in'] = True
-		# If the password is wrong
-		elif 'pwd' in request.form :
-			# Ask user to enter the password again
-			flash(tr('Error! You have entered the wrong password, Please try again.'))
+	# Create login form
+	form = LoginForm(request.form)
+	# Validate the request
+	if form.validate_on_submit():
+		# Open config file to check the password stored in it
+		with open('config.json', 'r') as configFile :
+			# Load the config file to config object
+			config = json.load(configFile)
+			# Get password from the request
+			pwd = form.pwd.data
+			# Hash the password
+			pwd = hashlib.md5(pwd.encode('utf-8')).hexdigest()
+			# If the password entered by the user is the same as the one in our config file 
+			if config['pwd'] == pwd :
+				 # Login was successful and we'll set 'logged_in' to true in our session, this will grant the user admin privileges!
+				session['logged_in'] = True
+			# If the password is wrong
+			elif 'pwd' in request.form :
+				# Ask user to enter the password again
+				flash(tr('Error! You have entered the wrong password, Please try again.'))
 	# Return to the main page
 	return redirect(url_for('index'))
 
