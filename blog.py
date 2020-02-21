@@ -567,7 +567,7 @@ def config(): # NOTE: Need more test!
 		# Render the config page and fill it with newconfig values
 		return render_template("config.html", form=form)
 	else: # If there was any problem during request validation
-		# Raise 'ValidationError' Exception and render 400 'Bad Request' error page!
+		# Raise 'ValidationError' exception and render 400 'Bad Request' error page!
 		raise ValidationError
 		return render_template('400.html'), 400
 
