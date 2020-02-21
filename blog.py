@@ -80,6 +80,7 @@ limiter = Limiter(
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 # Because we don't need it
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# This will prevent some attacks
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 # Assign a 32 bytes length random value to app.secret_key
@@ -607,7 +608,7 @@ def login_required(func):
     return checkPrivileges
 
 
-# Add some headers to response
+# Add some headers to prevent some attacks
 @app.after_request
 def add_header(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
