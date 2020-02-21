@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # # # # #
-# RangiRangi v200220a
+# RangiRangi v2002210240a
 # A simple flask based Microblogging CMS written in Python
 # Coded by AlefMim (github.com/alefmim)
 # Contact me at mralefmim@gmail.com
