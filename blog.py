@@ -787,7 +787,7 @@ def page():
 # This function handles config page and configurations
 @app.route("/config", methods=['POST', 'GET'])
 @login_required
-def config():  # NOTE: Need more test!
+def config():
     '''
     Renders the config page and stores new configs in the config file
     '''
@@ -866,7 +866,7 @@ def config():  # NOTE: Need more test!
 # This function handles viewing and saving comments
 @app.route("/comments", methods=['POST', 'GET'])
 @authentication_required
-def comments():  # NOTE: Need more test and review!
+def comments():
     '''
     Renders the comments page for a specific post 
     and stores new comments in the database
@@ -998,7 +998,7 @@ def share():
 # saving new posts and editing existing posts in the database
 @app.route("/post", methods=['POST', 'GET'])
 @login_required
-def post():  # NOTE: Need more test and review!
+def post():
     '''
     Renders the post page and stores new or edited posts in the database
     '''
@@ -1491,7 +1491,7 @@ def removelink():
 @limiter.limit("3/minute")  # 3    per minute
 @limiter.limit("15/hour")  # 15    per hour
 @limiter.limit("45/day")  # 45    per day
-def login():  # NOTE: Need more test!
+def login():
     '''
     Gets the password sent by user and compare it 
     with the password stored in the config file
