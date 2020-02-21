@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # # # # #
-# RangiRangi v2002210240a
+# RangiRangi
 # A simple flask based Microblogging CMS written in Python
 # Coded by AlefMim (github.com/alefmim)
 # Contact me at mralefmim@gmail.com
@@ -182,31 +182,34 @@ def tr(text: str) -> str:
 
 # Config page form
 class ConfigForm (FlaskForm):
-	title = StringField('title', validators=[DataRequired(), Length(min=1, max=64)])
-	desc = StringField('desc', validators=[DataRequired(), Length(min=1, max=256)])
-	dispname = StringField('dispname', validators=[DataRequired(), Length(min=1, max=32)])
-	mailaddr = StringField('mailaddr', validators=[DataRequired(), Email(), Length(min=3, max=254)])
-	dtformat = StringField('dtformat', validators=[DataRequired(), Length(min=2, max=32)])
+	title = StringField('title', validators=[DataRequired(), Length(min=1, max=64)], render_kw={'maxlength': 64})
+	desc = StringField('desc', validators=[DataRequired(), Length(min=1, max=256)], render_kw={'maxlength': 256})
+	dispname = StringField('dispname', validators=[DataRequired(), Length(min=1, max=32)], render_kw={'maxlength': 32})
+	mailaddr = StringField('mailaddr', validators=[DataRequired(), Email(), Length(min=3, max=254)], render_kw={'maxlength': 254})
+	dtformat = StringField('dtformat', validators=[DataRequired(), Length(min=2, max=32)], render_kw={'maxlength': 32})
 	calendar = SelectField('calendar', validators=[DataRequired()], choices=[('Gregorian', tr('Gregorian')), ('Jalali', tr('Jalali'))])
-	currpwd = PasswordField('currpwd', validators=[InputRequired(), Length(min=5, max=128)])
-	newpwd = PasswordField('newpwd', validators=[Optional(), Length(min=8, max=128), EqualTo('confirmpwd')], id='pwd1')
-	confirmpwd = PasswordField('confirmpwd', validators=[Optional(), Length(min=8, max=128), EqualTo('newpwd')], id='pwd2')
-	ppp = IntegerField('ppp', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)])
+	currpwd = PasswordField('currpwd', validators=[InputRequired(), Length(min=5, max=128)], render_kw={'minlength' : 5, 'maxlength': 128})
+	newpwd = PasswordField('newpwd', validators=[Optional(), Length(min=8, max=128), EqualTo('confirmpwd')], id='pwd1' \
+		, render_kw={'minlength' : 8, 'maxlength': 128})
+	confirmpwd = PasswordField('confirmpwd', validators=[Optional(), Length(min=8, max=128), EqualTo('newpwd')], id='pwd2' \
+		, render_kw={'minlength' : 8, 'maxlength': 128})
+	ppp = IntegerField('ppp', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)], render_kw={'maxlength': 16})
 
 # Comment page form
 class CommentForm (FlaskForm):
-	name = StringField('name', validators=[DataRequired(), Length(min=1, max=24)])
-	mailaddr = StringField('mailaddr', validators=[Optional(), Email(), Length(min=3, max=40)])
-	website = StringField('website', validators=[Optional(), URL(), Length(min=3, max=40)])
-	content = StringField('content', validators=[DataRequired(), Length(min=1, max=255)])
+	name = StringField('name', validators=[DataRequired(), Length(min=1, max=24)], render_kw={'maxlength': 24})
+	mailaddr = StringField('mailaddr', validators=[Optional(), Email(), Length(min=3, max=40)], render_kw={'minlength' : 3, 'maxlength': 40})
+	website = StringField('website', validators=[Optional(), URL(), Length(min=3, max=40)], render_kw={'minlength' : 3, 'maxlength': 40})
+	content = StringField('content', validators=[DataRequired(), Length(min=1, max=255)], render_kw={'maxlength': 255})
 	postid = IntegerField('postid', validators=[InputRequired(), NumberRange(min=1, max=9999999999999999)], widget=HiddenInput())
 
 # Post page form
 class PostForm (FlaskForm):
 	category = SelectField('category', coerce=int, validators=[DataRequired()])
-	title = StringField('title', validators=[DataRequired(), Length(min=1, max=32)])
-	content = StringField('content', validators=[DataRequired(), Length(min=1, max=256)], widget=TextArea(), render_kw={'rows': 5})
-	mediaaddr = StringField('mediaaddr', validators=[Optional(), Length(min=1, max=256)])
+	title = StringField('title', validators=[DataRequired(), Length(min=1, max=32)], render_kw={'maxlength': 32})
+	content = StringField('content', validators=[DataRequired(), Length(min=1, max=256)], widget=TextArea() \
+		, render_kw={'rows': 5, 'maxlength': 256})
+	mediaaddr = StringField('mediaaddr', validators=[Optional(), Length(min=1, max=256)], render_kw={'maxlength': 256})
 	postid = IntegerField('postid', validators=[Optional(), NumberRange(min=1, max=9999999999999999)], widget=HiddenInput())
 
 # This function replaces all hashtags in 'rawText' with linked hashtags 
