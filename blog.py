@@ -515,7 +515,7 @@ def config(): # NOTE: Need more test!
 		config = json.load(configFile)
 	# Form object which holds the request data 
 	form = ConfigForm(request.form)
-	
+	# If user opened the config page without requesting to change the config
 	if request.method == 'GET':
 		# Fill the form with current config
 		form.title.default = config['title']
@@ -529,12 +529,11 @@ def config(): # NOTE: Need more test!
 		form.process(data=config)
 		# Render the config page and fill it with current (old) config values
 		return render_template("config.html", form=form)
-	# Validate the request data
+	# Validate the request data if there's a request to change the config
 	if form.validate_on_submit():
 		# We'll make a new config object
 		newconfig = {}
 		# And assign the user requested values to this new config object
-		# form.process(formdata=request.form)
 		newconfig['title'] = form.title.data
 		newconfig['desc'] = form.desc.data
 		newconfig['dispname'] = form.dispname.data
@@ -542,12 +541,12 @@ def config(): # NOTE: Need more test!
 		newconfig['ppp'] = form.ppp.data
 		newconfig['dtformat'] = form.dtformat.data
 		newconfig['calendar'] = form.calendar.data
-		# Hash the passwords entered by user
-		currpwd = hashlib.md5(form.currpwd.data.encode('utf-8'))
 		newpassword = form.newpwd.data
+		# Hash the password entered by user
+		currpwd = hashlib.md5(form.currpwd.data.encode('utf-8'))
 		# Check if the current password is the same as the one entered by user
 		if config['pwd'] != currpwd.hexdigest() :
-			# Warn user if password is wrong!
+			# Warn user if password doesn't match!
 			flash(tr('Error! You have entered the wrong password, Please try again.'))
 			# And render the config page without changing the config
 			render_template("config.html", form=form), 401
@@ -563,10 +562,12 @@ def config(): # NOTE: Need more test!
 		# If everything goes well, we'll save the new config to the config file
 		# Open config file for output and erase its data
 		with open('config.json', 'w') as configFile:
+			# Save new config
 			json.dump(newconfig, configFile)
 		# Render the config page and fill it with newconfig values
 		return render_template("config.html", form=form)
-	else:
+	else: # If there was any problem during request validation
+		# Raise 'ValidationError' Exception and render 400 'Bad Request' error page!
 		raise ValidationError
 		return render_template('400.html'), 400
 
