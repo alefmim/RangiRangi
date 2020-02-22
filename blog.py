@@ -458,7 +458,7 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
         return render_template("config.html", config=install())
     # This is where we keep the result!
     result = ''
-
+    # Names of the days of the week
     days = {
         0: tr('Monday'),
         1: tr('Tuesday'),
@@ -471,8 +471,8 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
     # Convert strDateTime to a date/time object
     gdt = datetime.datetime.strptime(strDateTime, '%Y-%m-%d %H:%M:%S')
     jdt = jdatetime.GregorianToJalali(gdt.year, gdt.month, gdt.day)
-
-    if config['calendar'] == 'Jalali':  # If Jalali Calendar is enabled!
+    # If Jalali Calendar is enabled!
+    if config['calendar'] == 'Jalali':
         # We'll use the Jalali Calendar
         # Jalali months
         jmonths = {
@@ -489,13 +489,12 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
             11: tr('Bahman'),
             12: tr('Esfand')
         }
-
         result = strFormat.replace('%Y', str(jdt.jyear))
         result = result.replace('%m', str(jdt.jmonth))
         result = result.replace('%B', jmonths[jdt.jmonth])
-        result = result.replace('%d', str(jdt.jday))\
-
-    elif config['calendar'] == 'Gregorian':  # If Jalali Calendar is disabled
+        result = result.replace('%d', str(jdt.jday))
+    # If Jalali Calendar is disabled
+    elif config['calendar'] == 'Gregorian':
         # We'll use the Gregorian Calendar
         # Gregorian months
         gmonths = {
@@ -512,18 +511,17 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
             11: tr('November'),
             12: tr('December')
         }
-
         result = strFormat.replace('%Y', str(gdt.year))
         result = result.replace('%m', str(gdt.month))
         result = result.replace('%B', gmonths[gdt.month])
         result = result.replace('%d', str(gdt.day))
-
+    # End If
     result = result.replace('%A', days[gdt.weekday()])
     result = result.replace('%H', str(gdt.hour))
     result = result.replace('%M', str(gdt.minute))
     result = result.replace('%S', str(gdt.second))
     result = result.replace('%N', '')
-
+    # Return formatted date/time string
     return result
 
 
