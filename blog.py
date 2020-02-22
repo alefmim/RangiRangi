@@ -793,7 +793,6 @@ def config():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # Create a new config object (we'll load data in it later!)
     config = {}
     # Load config file to the memory as config object
@@ -946,7 +945,6 @@ def deletecomment():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # Check if it's not a bad request
     if 'id' in request.args:
         # Get the category id from the request
@@ -1004,7 +1002,6 @@ def post():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # If there's no category then we'll make one!
     # (otherwise an error will occur!)
     if dbcategory.query.count() == 0:
@@ -1153,7 +1150,6 @@ def deletepost():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # If it's not a bad request
     if 'id' in request.args:
         # Get postid
@@ -1222,7 +1218,6 @@ def newcategory():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # If it's not a bad request
     if 'name' in request.args:
         # Get 'name' from request
@@ -1261,7 +1256,6 @@ def editcategory():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # If it's not a bad request
     if 'id' in request.args:
         # Get new category name from the request
@@ -1307,7 +1301,6 @@ def removecategory():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # If it's not a bad request
     if 'id' in request.args:
         # Get the category id from the request
@@ -1352,7 +1345,6 @@ def addlink():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # If it's not a bad request
     if 'address' in request.args \
             and 'name' in request.args:
@@ -1401,7 +1393,6 @@ def editlink():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # If it's not a bad request
     if 'id' in request.args:
         # Get the data from the request
@@ -1467,7 +1458,6 @@ def removelink():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-
     # If it's not a bad request
     if 'id' in request.args:
         # Get link's id from the request
