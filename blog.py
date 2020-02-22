@@ -452,7 +452,7 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
             # This will load config file to the memory as config object
             config = json.load(configFile)
     except FileNotFoundError:  # This exception means that
-        #our program is not installed and configured yet!
+        # the program is not installed and configured yet!
         # So we'll call install() to make the config
         # and database files and redirect user to config page
         return render_template("config.html", config=install())
@@ -653,7 +653,7 @@ def index():
             # This will load config file to the memory as config object
             config = json.load(configFile)
     except FileNotFoundError:  # This exception means that
-        # our program is not installed and configured yet!
+        # the program is not installed and configured yet!
         # So we'll call install() to make the config and
         # database files and redirect user to config page
         return render_template("config.html",
