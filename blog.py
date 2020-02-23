@@ -91,7 +91,7 @@ db = SQLAlchemy(app)
 
 
 # Order Columns are currently not being used but we'll use them in the future!
-class dbcategory(db.Model):  # Category Object (Categories Table)
+class dbcategory(db.Model):  # Category Class (Categories Table)
     # Category ID (Primary Key)
     catid = db.Column('catid',
                       db.Integer,
@@ -110,7 +110,7 @@ class dbcategory(db.Model):  # Category Object (Categories Table)
         self.order = order  # Category Order
 
 
-class dbpost(db.Model):  # Post Object (Posts Table)
+class dbpost(db.Model):  # Post Class (Posts Table)
     # Post ID (Primary Key)
     postid = db.Column('postid',
                        db.Integer,
@@ -145,7 +145,7 @@ class dbpost(db.Model):  # Post Object (Posts Table)
         self.mediaaddr = mediaaddr  # Multimedia File (Image) Address
 
 
-class dbcomment(db.Model):  # Comment Object (Comments Table)
+class dbcomment(db.Model):  # Comment Class (Comments Table)
     # Comment ID (Primary Key)
     cmtid = db.Column('commentid',
                       db.Integer,
@@ -177,7 +177,7 @@ class dbcomment(db.Model):  # Comment Object (Comments Table)
         self.emailaddr = emailaddr  # Comment Author's EMail Address
 
 
-class dbtag(db.Model):  # Tag Object (Tags Table)
+class dbtag(db.Model):  # Tag Class (Tags Table)
     # Tag ID (Primary Key)
     tagid = db.Column('tagid',
                       db.Integer,
@@ -196,7 +196,7 @@ class dbtag(db.Model):  # Tag Object (Tags Table)
         self.popularity = popularity  # Tag Popularity
 
 
-class dblink(db.Model):  # Link Object (Links Table)
+class dblink(db.Model):  # Link Class (Links Table)
     # Link ID (Primary Key)
     linkid = db.Column('linkid',
                        db.Integer,
