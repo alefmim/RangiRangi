@@ -223,7 +223,7 @@ def tr(text: str) -> str:
     Parameters
     ----------
     text : str
-            Persian/Farsi string to lookup in translation.json file
+            English string to lookup in translation.json file
 
     Returns
     -------
