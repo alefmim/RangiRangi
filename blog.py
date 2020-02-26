@@ -661,7 +661,7 @@ def authentication_required(func):
         # If user didn't login yet then
         # we'll save (logged_in = False) for his session!
         if not 'logged_in' in session:
-            session['logged_in'] = True  # CRITICAL
+            session['logged_in'] = False
         return func(*args, **kwargs)
 
     return authenticate
@@ -1797,3 +1797,4 @@ def install():
 if __name__ == '__main__':
     # Run the program (Only for development purposes!)
     app.run(debug=True)
+
