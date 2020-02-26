@@ -1795,6 +1795,5 @@ def install():
 
 # If this module is the main program!
 if __name__ == '__main__':
-    # Run the program (Only for development purposes!)
+    # Run the program (For development purposes only!)
     app.run(debug=True)
-
