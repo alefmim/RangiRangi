@@ -943,7 +943,7 @@ def config():
         # Open config file for output and erase its data
         with open('config.json', 'w') as configFile:
             # Save new config
-            json.dump(newconfig, configFile)
+            json.dump(newconfig, configFile, indent=4, sort_keys=True)
         # Render the config page and fill it with newconfig values
         return render_template("config.html", form=form)
     else:  # If there was any problem during request validation
@@ -1785,7 +1785,7 @@ def install():
         newpwd = hashlib.md5('admin'.encode('utf-8'))
         newconfig['pwd'] = newpwd.hexdigest()
         # Create a config file using our new config
-        json.dump(newconfig, configFile)
+        json.dump(newconfig, configFile, indent=4, sort_keys=True)
         # Give user admin's password!
         flash(tr('Password') + ' :\n\nadmin')
         # Return this new config object
