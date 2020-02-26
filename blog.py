@@ -258,41 +258,69 @@ def tr(text: str) -> str:
 
 
 class ConfigForm(FlaskForm):  # Config page form
-    title = StringField('title',
-                        validators=[DataRequired(),
-                                    Length(min=1, max=64)],
-                        render_kw={'maxlength': 64})
+    title = StringField(
+        'title',
+        validators=[
+            DataRequired(message=tr('Title is Required.')),
+            Length(min=1,
+                   max=64,
+                   message=tr('Title must be between '+ \
+                        '1 and 64 characters long.'))
+        ],
+        render_kw={'maxlength': 64})
     desc = StringField('desc',
-                       validators=[DataRequired(),
-                                   Length(min=1, max=256)],
+                       validators=[DataRequired(
+                            message=tr('Description is Required.')),
+                       Length(min=1, max=256,
+                            message=tr('Description must be between '+ \
+                                '1 and 256 characters long.'))],
                        render_kw={'maxlength': 256})
     dispname = StringField('dispname',
-                           validators=[DataRequired(),
-                                       Length(min=1, max=32)],
+                           validators=[DataRequired(
+                           message=tr('Display Name is Required.')),
+                           Length(min=1, max=32,
+                                  message=tr('Display Name must be '+ \
+                                      'between 1 and 32 characters long.'))],
                            render_kw={'maxlength': 32})
     mailaddr = EmailField(
         'mailaddr',
-        validators=[DataRequired(),
-                    Email(), Length(min=3, max=254)],
+        validators=[DataRequired(message=tr('EMail is Required.')),
+                    Email(message=tr('Please check the email format.')),
+                    Length(min=3, max=254, message=tr('EMail must be '+ \
+                                      'between 3 and 254 characters long.'))],
         render_kw={'maxlength': 254})
     dtformat = StringField('dtformat',
-                           validators=[DataRequired(),
-                                       Length(min=2, max=32)],
+                           validators=[DataRequired(
+                               message=tr('Date/Time Format is Required.')),
+                           Length(min=2, max=32,
+                               message=tr('Date/Time Format must be '+ \
+                                   'between 2 and 32 characters long.'))],
                            render_kw={'maxlength': 32})
-    calendar = SelectField('calendar',
-                           validators=[DataRequired()],
-                           choices=[('Gregorian', tr('Gregorian')),
-                                    ('Jalali', tr('Jalali'))])
-    autoapproval = SelectField('autoapproval',
-                               validators=[DataRequired()],
-                               choices=[('Yes', tr('Yes')), ('No', tr('No'))])
-    disablecomments = SelectField('disablecomments',
-                                  validators=[DataRequired()],
-                                  choices=[('Yes', tr('Yes')),
-                                           ('No', tr('No'))])
+    calendar = SelectField(
+        'calendar',
+        validators=[
+            DataRequired(message=tr('Calendar Type Setting is Required.'))
+        ],
+        choices=[('Gregorian', tr('Gregorian')), ('Jalali', tr('Jalali'))])
+    autoapproval = SelectField(
+        'autoapproval',
+        validators=[
+            DataRequired(message=tr('AutoApproval Setting is Required.'))
+        ],
+        choices=[('Yes', tr('Yes')), ('No', tr('No'))])
+    disablecomments = SelectField(
+        'disablecomments',
+        validators=[
+            DataRequired(message=tr('Disabling Comments Setting is Required.'))
+        ],
+        choices=[('Yes', tr('Yes')), ('No', tr('No'))])
     currpwd = PasswordField(
         'currpwd',
-        validators=[InputRequired(), Length(min=5, max=128)],
+        validators=[
+            InputRequired(message=tr('Current Password Required.')),
+            Length(min=5, max=128, message=tr('Current Password must be '+ \
+                                   'between 5 and 128 characters long.'))
+        ],
         render_kw={
             'minlength': 5,
             'maxlength': 128
@@ -300,8 +328,11 @@ class ConfigForm(FlaskForm):  # Config page form
     newpwd = PasswordField(
         'newpwd',
         validators=[Optional(),
-                    Length(min=8, max=128),
-                    EqualTo('confirmpwd')],
+                    Length(min=8, max=128,
+                        message=tr('New Password must be '+ \
+                                   'between 8 and 128 characters long.')),
+                    EqualTo('confirmpwd',
+                        message=tr('New passwords do not match.'))],
         id='pwd1',
         render_kw={
             'minlength': 8,
@@ -310,8 +341,11 @@ class ConfigForm(FlaskForm):  # Config page form
     confirmpwd = PasswordField(
         'confirmpwd',
         validators=[Optional(),
-                    Length(min=8, max=128),
-                    EqualTo('newpwd')],
+                    Length(min=8, max=128,
+                        message=tr('New Password must be '+ \
+                                   'between 8 and 128 characters long.')),
+                    EqualTo('newpwd',
+                        message=tr('New passwords do not match.'))],
         id='pwd2',
         render_kw={
             'minlength': 8,
@@ -319,35 +353,48 @@ class ConfigForm(FlaskForm):  # Config page form
         })
     ppp = IntegerField(
         'ppp',
-        validators=[InputRequired(),
-                    NumberRange(min=1, max=9999999999999999)],
+        validators=[InputRequired(tr('Posts Per Page Setting Required.')),
+                    NumberRange(min=1, max=9999999999999999,
+                        message=tr('Posts Per Page Setting must be '+ \
+                                   'between 1 and 16 digits long.'))],
         render_kw={'maxlength': 16})
 
 
 class CommentForm(FlaskForm):  # Comment page form
     name = StringField('name',
-                       validators=[DataRequired(),
-                                   Length(min=1, max=24)],
+                       validators=[DataRequired(
+                           message=tr('Name is Required.')),
+                       Length(min=1, max=24,
+                           message=tr('Name must be between '+ \
+                                      '1 and 24 characters long.'))],
                        render_kw={'maxlength': 24})
     mailaddr = EmailField(
         'mailaddr',
-        validators=[Optional(), Email(),
-                    Length(min=3, max=40)],
+        validators=[Optional(), Email(
+                        message=tr('Please check the email format.')),
+                    Length(min=3, max=40,
+                        message=tr('EMail must be between '+ \
+                                   '1 and 40 characters long.'))],
         render_kw={
             'minlength': 3,
             'maxlength': 40
         })
     website = URLField('website',
-                       validators=[Optional(),
-                                   URL(),
-                                   Length(min=3, max=40)],
+                       validators=[
+                           Optional(),
+                           URL(message=tr('Please check the url format.')),
+                           Length(min=3, max=40)
+                       ],
                        render_kw={
                            'minlength': 3,
                            'maxlength': 40
                        })
     content = StringField('content',
-                          validators=[DataRequired(),
-                                      Length(min=1, max=255)],
+                          validators=[DataRequired(
+                              message=tr('Content is Required.')),
+                                      Length(min=1, max=256,
+                              message=tr('Content must be between '+ \
+                                         '1 and 255 characters long.'))],
                           render_kw={'maxlength': 255})
     postid = IntegerField(
         'postid',
@@ -359,25 +406,40 @@ class CommentForm(FlaskForm):  # Comment page form
 class PostForm(FlaskForm):  # Post page form
     category = SelectField('category', coerce=int, validators=[DataRequired()])
     title = StringField('title',
-                        validators=[DataRequired(),
-                                    Length(min=1, max=32)],
+                        validators=[DataRequired(
+                            message=tr('Title is Required.')),
+                        Length(min=1, max=32,
+                            message=tr('Title must be between '+ \
+                                       '1 and 32 characters long.'))],
                         render_kw={'maxlength': 32})
     content = StringField('content',
-                          validators=[DataRequired(),
-                                      Length(min=1, max=256)],
+                          validators=[
+                              DataRequired(message=tr('Content is Required.')),
+                              Length(min=1, max=512,
+                                message=tr('Content must be between '+ \
+                                           '1 and 512 characters long.'))
+                          ],
                           widget=TextArea(),
                           render_kw={
                               'rows': 5,
-                              'maxlength': 256
+                              'maxlength': 512
                           })
-    mediaaddr = StringField('mediaaddr',
-                            validators=[Optional(),
-                                        Length(min=1, max=256)],
-                            render_kw={'maxlength': 256})
-    disablecomments = SelectField('disablecomments',
-                                  validators=[DataRequired()],
-                                  choices=[('No', tr('No')),
-                                           ('Yes', tr('Yes'))])
+    mediaaddr = StringField(
+        'mediaaddr',
+        validators=[
+            Optional(),
+            URL(message=tr('Please check the url format.')),
+            Length(min=1, max=256,
+            message=tr('URL must be between '+ \
+                       '1 and 256 characters long.'))
+        ],
+        render_kw={'maxlength': 256})
+    disablecomments = SelectField(
+        'disablecomments',
+        validators=[
+            DataRequired(message=tr('Disabling Comments Setting is Required.'))
+        ],
+        choices=[('No', tr('No')), ('Yes', tr('Yes'))])
     postid = IntegerField(
         'postid',
         validators=[Optional(),
@@ -387,8 +449,12 @@ class PostForm(FlaskForm):  # Post page form
 
 class LoginForm(FlaskForm):  # Login form
     pwd = PasswordField('pwd',
-                        validators=[InputRequired(),
-                                    Length(min=5, max=128)],
+                        validators=[
+                            InputRequired(message=tr('Password Required.')),
+                            Length(min=5,
+                                   max=128,
+                                   message=tr('Invalid Password!'))
+                        ],
                         id='pwInput',
                         render_kw={
                             'minlength': 5,
