@@ -424,7 +424,7 @@ class PostForm(FlaskForm):  # Post page form
                               'rows': 5,
                               'maxlength': 512
                           })
-    mediaaddr = StringField(
+    mediaaddr = URLField(
         'mediaaddr',
         validators=[
             Optional(),
@@ -661,7 +661,7 @@ def authentication_required(func):
         # If user didn't login yet then
         # we'll save (logged_in = False) for his session!
         if not 'logged_in' in session:
-            session['logged_in'] = False
+            session['logged_in'] = True  # CRITICAL
         return func(*args, **kwargs)
 
     return authenticate
@@ -707,7 +707,7 @@ def error400(e):
     Renders our custom 400 error page and 
     returns error code 400 'Bad Request' to the client
     '''
-    return render_template('400.html'), 400
+    return render_template('400.html', errormsg=str(e)), 400
 
 
 # 404 error page
@@ -947,10 +947,12 @@ def config():
         # Render the config page and fill it with newconfig values
         return render_template("config.html", form=form)
     else:  # If there was any problem during request validation
-        # Raise 'ValidationError' exception and
-        # render 400 'Bad Request' error page!
-        raise ValidationError
-        return render_template('400.html'), 400
+        # Show error messages
+        flash('\n'.join('%s' % val
+                    for val in form.errors.values()) \
+                        .replace('[\'','').replace('\']',''))
+        # Render the config page and fill it with user requested values
+        return render_template("config.html", form=form)
 
 
 # This function handles viewing and saving comments
@@ -1040,6 +1042,11 @@ def comments():
     # Disable Comments if necessary
     if disablecomments != 'Yes':
         disablecomments = 'Yes' if (post.flags & 1) == 1 else 'No'
+    # Show error messages if there was any error(s) during validation
+    if (form.errors):
+        flash('\n'.join('%s' % val
+                      for val in form.errors.values()) \
+                          .replace('[\'','').replace('\']',''))
     # Render the comments page
     return render_template("comments.html",
                            comments=comments,
@@ -1297,6 +1304,11 @@ def post():
             db.session.commit()
         # Return to index and let the user see the new post
         return redirect(url_for('index'))
+    # Show error messages if there was any error(s) during validation
+    if (form.errors):
+        flash('\n'.join('%s' % val
+                      for val in form.errors.values()) \
+                          .replace('[\'','').replace('\']',''))
     # Render the page and fill it with the available data
     return render_template("post.html",
                            categories=categories,

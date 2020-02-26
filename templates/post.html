@@ -19,7 +19,15 @@
 			</div>
 		</div>
 	</div>
-
+	<script>
+		{% with messages = get_flashed_messages() %}
+		{% if messages %}
+		var messages = {{ messages | safe }};
+		for (var i = 0; i < messages.length; i++)
+			alert(messages[i]);
+		{% endif %}
+		{% endwith %}
+	</script>
 	<form class="editform" action="{{ request.script_root }}/post" method="post" accept-charset="utf-8">
 
 		{{ form.csrf_token }}
