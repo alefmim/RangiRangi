@@ -37,11 +37,34 @@
 			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
 			xhttp.send();
 		}
+		function approvecomment(id) {
+			if (id < 1) return;
+
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200)
+					window.location.href = window.location.href;
+				else if (this.readyState == 4 && this.status == 401)
+					alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
+			};
+			xhttp.open("POST", "{{ request.script_root }}/approvecomment?id=" + id);
+			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+			xhttp.send();
+		}
+		{% with messages = get_flashed_messages() %}
+		{% if messages %}
+		var messages = {{ messages | safe }};
+		for (var i = 0; i < messages.length; i++)
+			alert(messages[i]);
+		{% endif %}
+		{% endwith %}
 	</script>
 
 	<div class="comments">
 		{% if (comments) %}
+		{% set var = namespace(counter = 0) %}
 		{% for comment in comments %}
+		{% if (comment['status'] >= 2) %}
+		{% set var.counter = var.counter + 1 %}
 		<div class="comment">
 			<div class="infobar">
 				{% if (comment['website']) %}<a class="website" href="{{comment['website']}}"
@@ -49,20 +72,62 @@
 					<span class="author">{{comment['name']}}</span>
 					{% if (comment['website']) %}</a>{% endif %}
 				{% if admin %}
-				<a href="javascript:deletecomment({{comment['cmtid']}});" class="delete"><span
+				<a href="javascript:deletecomment({{comment['cmtid']}});" class="btn"><span
 						class="far fa-trash-alt tooltip"><span class="tooltiptext">حذف نظر</span></span></a>
+				{% if (comment['status'] == 2) %}
+				<a href="javascript:void(0);" class="btn"><span class="fas fa-asterisk tooltip"><span
+							class="tooltiptext">نظر جدید</span></span></a>
+				{% endif %}
 				{% endif %}
 				<span class="date">{{comment['datetime']}}</span>
 			</div>
 			<p class="content">{{comment['content']}}{% if (comment['emailaddr']) and admin %}<br><br>پست الکترونیک :
 				{{comment['emailaddr']}}{% endif %}</p>
 		</div>
-		{% endfor %}
 		{% else %}
-		<p class="center content">هنوز نظری برای این پست ثبت نشده است!</p>
+		{% if (admin) %}
+		<div class="comment">
+			<div class="infobar new">
+				{% if (comment['website']) %}<a class="website" href="{{comment['website']}}"
+					target="_blank">{% endif %}
+					<span class="author">{{comment['name']}}</span>
+					{% if (comment['website']) %}</a>{% endif %}
+				{% if admin %}
+				<a href="javascript:deletecomment({{comment['cmtid']}});" class="btn"><span
+						class="far fa-trash-alt tooltip"><span class="tooltiptext">حذف نظر</span></span></a>
+				<a href="javascript:approvecomment({{comment['cmtid']}});" class="btn"><span
+						class="fas fa-check tooltip"><span class="tooltiptext">تأیید نظر</span></span></a>
+				{% if (comment['status'] == 0) %}
+				<a href="javascript:void(0);" class="btn"><span class="fas fa-asterisk tooltip"><span
+							class="tooltiptext">نظر جدید</span></span></a>
+				{% endif %}
+				{% endif %}
+				<span class="date">{{comment['datetime']}}</span>
+			</div>
+			<p class="content">{{comment['content']}}{% if (comment['emailaddr']) and admin %}<br><br>پست الکترونیک :
+				{{comment['emailaddr']}}{% endif %}</p>
+		</div>
 		{% endif %}
+		{% endif %}
+		{% endfor %}
+		{% if (var.counter == 0) and (not admin) and (disablecomments != 'Yes') %}
+		<p class="center content">هنوز نظری برای این پست ثبت نشده است.</p>
+		{% endif %}
+		{% if (not admin) and (disablecomments == 'Yes') %}
 	</div>
-
+	<div class="comments">
+		<p class="center content">ثبت نظرات برای این پست غیرفعال است.</p>
+	</div>
+	{% endif %}
+	{% else %}
+	{% if (admin) or (disablecomments != 'Yes') %}
+	<p class="center content">هنوز نظری برای این پست ثبت نشده است.</p>
+	{% else %}
+	<p class="center content">ثبت نظرات برای این پست غیرفعال است.</p>
+	{% endif %}
+	{% endif %}
+	</div>
+	{% if ((admin) or (disablecomments != 'Yes')) %}
 	<form class="commentform" action="{{ request.script_root }}/comments?postid={{ postid }}" method="post"
 		accept-charset="utf-8">
 
@@ -84,6 +149,7 @@
 
 		<button type="submit" class="bluebtn" id="submit">ارسال</button>
 	</form>
+	{% endif %}
 </body>
 
 </html>

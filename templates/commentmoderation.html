@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>مدیریت نظرات</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+        integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='comments.css') }}">
+</head>
+
+<body class="colorful">
+    <div class="whitegrad">
+        <div class="header">
+            <div class="headertext">
+                <a name="root" href="{{ request.url_root }}" class="headertext">
+                    مدیریت نظرات
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var xhttp = new XMLHttpRequest();
+        function deletecomment(id) {
+            if (id < 1) return;
+
+            if (!confirm('آیا از حذف نظر مطمئن هستید؟')) return;
+
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200)
+                    window.location.href = window.location.href;
+                else if (this.readyState == 4 && this.status == 401)
+                    alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
+            };
+            xhttp.open("POST", "{{ request.script_root }}/deletecomment?id=" + id);
+            xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+            xhttp.send();
+        }
+        function approvecomment(id) {
+            if (id < 1) return;
+
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200)
+                    window.location.href = window.location.href;
+                else if (this.readyState == 4 && this.status == 401)
+                    alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
+            };
+            xhttp.open("POST", "{{ request.script_root }}/approvecomment?id=" + id);
+            xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+            xhttp.send();
+        }
+    </script>
+
+    <div class="comments">
+        {% if (comments) %}
+        {% set var = namespace(counter = 0) %}
+        {% for comment in comments %}
+        {% if (comment['status'] >= 2) %}
+        {% set var.counter = var.counter + 1 %}
+        <div class="comment">
+            <div class="infobar">
+                {% if (comment['website']) %}<a class="website" href="{{comment['website']}}"
+                    target="_blank">{% endif %}
+                    <span class="author">{{comment['name']}}</span>
+                    {% if (comment['website']) %}</a>{% endif %}
+                <a href="javascript:deletecomment({{comment['cmtid']}});" class="btn"><span
+                        class="far fa-trash-alt tooltip"><span class="tooltiptext">حذف نظر</span></span></a>
+                {% if (comment['status'] == 2) %}
+                <a href="javascript:void(0);" class="btn"><span class="fas fa-asterisk tooltip"><span
+                            class="tooltiptext">نظر جدید</span></span></a>
+                {% endif %}
+                <a href="{{ request.script_root }}/show?id={{comment['pid']}}" class="btn"><span
+                        class="fas fa-external-link-alt tooltip"><span class="tooltiptext">نمایش پست</span></span></a>
+                <span class="date">{{comment['datetime']}}</span>
+            </div>
+            <p class="content">{{comment['content']}}{% if (comment['emailaddr']) %}<br><br>پست الکترونیک :
+                {{comment['emailaddr']}}{% endif %}</p>
+        </div>
+        {% else %}
+        <div class="comment">
+            <div class="infobar new">
+                {% if (comment['website']) %}<a class="website" href="{{comment['website']}}"
+                    target="_blank">{% endif %}
+                    <span class="author">{{comment['name']}}</span>
+                    {% if (comment['website']) %}</a>{% endif %}
+                <a href="javascript:deletecomment({{comment['cmtid']}});" class="btn"><span
+                        class="far fa-trash-alt tooltip"><span class="tooltiptext">حذف نظر</span></span></a>
+                <a href="javascript:approvecomment({{comment['cmtid']}});" class="btn"><span
+                        class="fas fa-check tooltip"><span class="tooltiptext">تأیید نظر</span></span></a>
+                {% if (comment['status'] == 0) %}
+                <a href="javascript:void(0);" class="btn"><span class="fas fa-asterisk tooltip"><span
+                            class="tooltiptext">نظر جدید</span></span></a>
+                {% endif %}
+                <a href="{{ request.script_root }}/show?id={{comment['pid']}}" class="btn"><span
+                        class="fas fa-external-link-alt tooltip"><span class="tooltiptext">نمایش پست</span></span></a>
+                <span class="date">{{comment['datetime']}}</span>
+            </div>
+            <p class="content">{{comment['content']}}{% if (comment['emailaddr']) %}<br><br>پست الکترونیک :
+                {{comment['emailaddr']}}{% endif %}</p>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <p class="center content">هنوز نظری برای این پست ثبت نشده است!</p>
+        {% endif %}
+    </div>
+
+    <footer>
+        <div id="home" class="bigbtn btnText" onclick="window.location.href='{{ request.url_root }}';">
+            <span class="fas fa-chevron-left">
+                <span class="btnTextBalloon">بازگشت به صفحه اصلی</span>
+            </span>
+        </div>
+    </footer>
+</body>
+
+</html>
