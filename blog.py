@@ -715,7 +715,7 @@ def index():
 @app.route("/page", methods=['POST'])
 @limiter.limit("60/second")
 @authentication_required
-def page():  # TODO: Remove Comment Button if comments are disabled for a post
+def page():
     '''
     Finds the posts which is requested by user and generates the requested page 
     '''
