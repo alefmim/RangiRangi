@@ -1,43 +1,51 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>مدیریت مطلب</title>
-		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
-		<link rel="stylesheet" href="{{ url_for('static', filename='post.css') }}">
-	</head>
-	<body class="colorful">
-		<div class="whitegrad">
-			<div class="header">
-				<div class="headertext">
-					<a name="root" href="{{ request.url_root }}" class="headertext">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>مدیریت مطلب</title>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+		integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+	<link rel="stylesheet" href="{{ url_for('static', filename='post.css') }}">
+</head>
+
+<body class="colorful">
+	<div class="whitegrad">
+		<div class="header">
+			<div class="headertext">
+				<a name="root" href="{{ request.url_root }}" class="headertext">
 					مدیریت مطلب
-					</a>
-				</div>
+				</a>
 			</div>
 		</div>
-		
-		<form class="editform" action="{{ request.script_root }}/post" method="post" accept-charset="utf-8">
-			
-			{{ form.csrf_token }}
-			
-			<span class="text">دسته بندی :</span>
-			{{ form['category'] }}
-			
-			<span class="text">عنوان مطلب :</span>
-			{{ form['title'] }}
-			
-			<span class="text tooltip">آدرس محتوای چند رسانه ای* :
-			<span class="tooltiptext">در حال حاضر فقط امکان درج تصاویر وجود دارد<br>[ پر کردن این فیلد الزامی نیست ]</span></span>
-			{{ form['mediaaddr'] }}
-			
-			<span class="text">محتوای متنی :</span>
-			{{ form['content'] }}
-			
-			{{ form['postid'] }}
-			
-			<button type="submit" class="bluebtn" id="submit">ارسال</button>
-		</form>
-	
-	</body>
+	</div>
+
+	<form class="editform" action="{{ request.script_root }}/post" method="post" accept-charset="utf-8">
+
+		{{ form.csrf_token }}
+
+		<span class="text">دسته بندی :</span>
+		{{ form['category'] }}
+
+		<span class="text">غیرفعال کردن نظرات :</span>
+		{{ form['disablecomments'] }}
+
+		<span class="text">عنوان مطلب :</span>
+		{{ form['title'] }}
+
+		<span class="text tooltip">آدرس محتوای چند رسانه ای* :
+			<span class="tooltiptext">در حال حاضر فقط امکان درج تصاویر وجود دارد<br>[ پر کردن این فیلد الزامی نیست
+				]</span></span>
+		{{ form['mediaaddr'] }}
+
+		<span class="text">محتوای متنی :</span>
+		{{ form['content'] }}
+
+		{{ form['postid'] }}
+
+		<button type="submit" class="bluebtn" id="submit">ارسال</button>
+	</form>
+
+</body>
+
 </html>

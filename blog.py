@@ -131,18 +131,21 @@ class dbpost(db.Model):  # Post Class (Posts Table)
     comments = db.Column('comments', db.Integer, nullable=False)
     # Multimedia File (Image) Address
     mediaaddr = db.Column('mediaaddr', db.String(256), nullable=True)
+    # Post Flags (NoComment=1)
+    flags = db.Column('flags', db.Integer, nullable=False)
     # Defining a foreign key (backref to pid in comments table!)
     posts = db.relationship('dbcomment',
                             backref=db.backref("dbcomment", uselist=False))
 
     def __init__(self, title: str, content: str, gdatetime: str, comments: int,
-                 category: int, mediaaddr: str):
+                 category: int, mediaaddr: str, flags: int):
         self.title = title  # Post Title
         self.content = content  # Post Content
         self.category = category  # Post Category
         self.gdatetime = gdatetime  # Post Date/Time
         self.comments = comments  # Number of comments on each post
         self.mediaaddr = mediaaddr  # Multimedia File (Image) Address
+        self.flags = flags  # Post Flags
 
 
 class dbcomment(db.Model):  # Comment Class (Comments Table)
@@ -166,15 +169,18 @@ class dbcomment(db.Model):  # Comment Class (Comments Table)
     website = db.Column('website', db.String(128), nullable=True)
     # Comment's Author's EMail Address
     emailaddr = db.Column('emailaddr', db.String(40), nullable=True)
+    # Comment Status (Seen=1, Approved=2)
+    status = db.Column('status', db.Integer, nullable=False)
 
     def __init__(self, pid: int, content: str, gdatetime: str, name: str,
-                 website: str, emailaddr: str):
+                 website: str, emailaddr: str, status: int):
         self.pid = pid  # Post ID (Foreign Key)
         self.content = content  # Comment Content
         self.gdatetime = gdatetime  # Comment Date/Time
         self.name = name  # Comment Author's Name
         self.website = website  # Comment Author's Website
         self.emailaddr = emailaddr  # Comment Author's EMail Address
+        self.status = status  # Comment Status
 
 
 class dbtag(db.Model):  # Tag Class (Tags Table)
@@ -277,6 +283,13 @@ class ConfigForm(FlaskForm):  # Config page form
                            validators=[DataRequired()],
                            choices=[('Gregorian', tr('Gregorian')),
                                     ('Jalali', tr('Jalali'))])
+    autoapproval = SelectField('autoapproval',
+                               validators=[DataRequired()],
+                               choices=[('Yes', tr('Yes')), ('No', tr('No'))])
+    disablecomments = SelectField('disablecomments',
+                                  validators=[DataRequired()],
+                                  choices=[('Yes', tr('Yes')),
+                                           ('No', tr('No'))])
     currpwd = PasswordField(
         'currpwd',
         validators=[InputRequired(), Length(min=5, max=128)],
@@ -361,6 +374,10 @@ class PostForm(FlaskForm):  # Post page form
                             validators=[Optional(),
                                         Length(min=1, max=256)],
                             render_kw={'maxlength': 256})
+    disablecomments = SelectField('disablecomments',
+                                  validators=[DataRequired()],
+                                  choices=[('No', tr('No')),
+                                           ('Yes', tr('Yes'))])
     postid = IntegerField(
         'postid',
         validators=[Optional(),
@@ -698,7 +715,7 @@ def index():
 @app.route("/page", methods=['POST'])
 @limiter.limit("60/second")
 @authentication_required
-def page():
+def page():  # TODO: Remove Comment Button if comments are disabled for a post
     '''
     Finds the posts which is requested by user and generates the requested page 
     '''
@@ -770,8 +787,14 @@ def page():
         post['postid'] = result.__dict__['postid']
         post['title'] = result.__dict__['title']
         post['category'] = result.__dict__['category']
-        post['comments'] = result.__dict__['comments']
         post['mediaaddr'] = result.__dict__['mediaaddr']
+        # If user is not admin then we'll show them approved comments
+        if (session['logged_in'] == False):
+            post['comments'] = dbcomment.query.filter(
+                dbcomment.pid == result.__dict__['postid']).filter(
+                    dbcomment.status >= 2).count()
+        else:  # If user is admin then we'll show them all comments
+            post['comments'] = result.__dict__['comments']
         # Put this post in our results
         posts.append(post)
     # Render results
@@ -809,6 +832,8 @@ def config():
         form.dtformat.default = config['dtformat']
         form.calendar.default = config['calendar']
         form.currpwd.default = config['pwd']
+        form.autoapproval = config['autoapproval']
+        form.disablecomments = config['disablecomments']
         form.process(data=config)
         # Render the config page and fill it with current (old) config values
         return render_template("config.html", form=form)
@@ -824,6 +849,8 @@ def config():
         newconfig['ppp'] = form.ppp.data
         newconfig['dtformat'] = form.dtformat.data
         newconfig['calendar'] = form.calendar.data
+        newconfig['autoapproval'] = form.autoapproval.data
+        newconfig['disablecomments'] = form.disablecomments.data
         newpassword = form.newpwd.data
         # Hash the password entered by user
         currpwd = hashlib.md5(form.currpwd.data.encode('utf-8'))
@@ -877,12 +904,22 @@ def comments():
         # Renders our custom 400 error page and
         # returns error code 400 'Bad Request' to the client
         return render_template('400.html'), 400
+    # Load config file to the memory as config object
+    with open('config.json', 'r') as configFile:
+        config = json.load(configFile)
+        # Get date/time format
+        dtformat = config['dtformat']
+        # Set autoapproval value to true if it's enabled in config
+        # or user has admin privileges
+        autoapproval = 2 if config['autoapproval'] == 'Yes' \
+            or session['logged_in'] == True else 0
+        disablecomments = config['disablecomments']
     # Form object which holds the request data
     # We'll set postid value to hidden field
     form = CommentForm(request.form, postid=postid)
     # Validate the request data
     # and check if there's a new comment
-    if form.validate_on_submit():
+    if form.validate_on_submit() and disablecomments != 'Yes':
         # Get the data from the request
         name = form.name.data
         mailaddr = form.mailaddr.data
@@ -890,9 +927,10 @@ def comments():
         content = form.content.data
         postid = form.postid.data
         gdatetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        status = autoapproval
         # Create a new comment with the data provided above
         comment = dbcomment(postid, content, gdatetime, name, website,
-                            mailaddr)
+                            mailaddr, status)
         # Increase the number of comments of
         # the post which this comment belongs to
         post.comments = post.comments + 1
@@ -900,13 +938,14 @@ def comments():
         db.session.add(comment)
         # Save changes to database
         db.session.commit()
+        # If Automatic approval is disabled and user is not admin
+        if (not autoapproval) and (session['logged_in'] == False):
+            # Inform the user that their comment
+            # will appear after it is approved
+            flash(tr("Thank you! Your comment " + \
+                "will appear after it is approved."))
     # Load all comments that belong to a specific post from the database
     results = dbcomment.query.filter(dbcomment.pid == postid).all()
-    # Load config file to the memory as config object
-    with open('config.json', 'r') as configFile:
-        config = json.load(configFile)
-        # Get date/time format
-        dtformat = config['dtformat']
     # Array of our comments (results)
     comments = []
     # We'll use this loop to run the 'formatDateTime' function
@@ -922,15 +961,25 @@ def comments():
         comment['name'] = result.__dict__['name']
         comment['website'] = result.__dict__['website']
         comment['emailaddr'] = result.__dict__['emailaddr']
+        comment['status'] = result.__dict__['status']
+        # If user is admin then we'll remove comment's unseen status
+        if (session['logged_in'] == True):
+            result.status = result.status | 1
         # Put this comment in our results
         comments.append(comment)
     # Sort Comments and show new comments first!
     comments.reverse()
+    # Save changes to database
+    db.session.commit()
+    # Disable Comments if necessary
+    if disablecomments != 'Yes':
+        disablecomments = 'Yes' if (post.flags & 1) == 1 else 'No'
     # Render the comments page
     return render_template("comments.html",
                            comments=comments,
                            postid=postid,
                            form=form,
+                           disablecomments=disablecomments,
                            admin=session['logged_in'])
 
 
@@ -945,7 +994,7 @@ def deletecomment():
     # it's requested by admin or not by using @login_required
     # Check if it's not a bad request
     if 'id' in request.args:
-        # Get the category id from the request
+        # Get the comment id from the request
         id = request.args.get('id', type=int, default=-1)
         # Find the comment by its id
         comment = dbcomment.query.filter(dbcomment.cmtid == id)
@@ -968,6 +1017,82 @@ def deletecomment():
     return ('', 400)
 
 
+# This function handles approving comments
+@app.route("/approvecomment", methods=['POST'])
+@login_required
+def approvecomment():
+    '''
+    Approves a comment
+    '''
+    # This page requires admin privileges so we'll check if
+    # it's requested by admin or not by using @login_required
+    # Check if it's not a bad request
+    if 'id' in request.args:
+        # Get the comment id from the request
+        id = request.args.get('id', type=int, default=-1)
+        # Find the comment by its id
+        comment = dbcomment.query.filter(dbcomment.cmtid == id).first()
+        # Check if the comment exists
+        if comment is None:
+            return ('', 400)
+        # Change comment approval status to approved!
+        comment.status = 3
+        # Save changes to the database
+        db.session.commit()
+        # Return "Success!"
+        return ('', 200)
+    # Return "Failure!"
+    return ('', 400)
+
+
+# This function handles viewing and saving comments
+@app.route("/commentmoderation", methods=['POST', 'GET'])
+@login_required
+def commentmoderation():
+    '''
+    Renders the comment moderation page
+    '''
+    # Load config file to the memory as config object
+    with open('config.json', 'r') as configFile:
+        config = json.load(configFile)
+        # Get date/time format
+        dtformat = config['dtformat']
+    # Load all comments that require approval
+    results = dbcomment.query.filter(dbcomment.status != 3) \
+        .order_by(dbcomment.cmtid.asc()).all()
+    # Array of our comments (results)
+    comments = []
+    # We'll use this loop to run the 'formatDateTime' function
+    # on each comment to format its date/time
+    for result in results:
+        comment = {}  # A single comment (we'll assign its values below!)
+        # And format date/time using the 'formatDateTime' function
+        comment['datetime'] = formatDateTime(result.__dict__['gdatetime'],
+                                             dtformat)
+        # Rest is the same without any modification!
+        comment['content'] = result.__dict__['content']
+        comment['cmtid'] = result.__dict__['cmtid']
+        comment['pid'] = result.__dict__['pid']
+        comment['name'] = result.__dict__['name']
+        comment['website'] = result.__dict__['website']
+        comment['emailaddr'] = result.__dict__['emailaddr']
+        comment['status'] = result.__dict__['status']
+        # Mark new comments as seen
+        if (session['logged_in'] == True):
+            result.status = result.status | 1
+        # Put this comment in our results
+        comments.append(comment)
+    # Sort Comments and show new comments first!
+    comments.reverse()
+    # Save changes to database
+    db.session.commit()
+    # Render the comment moderation page
+    return render_template(
+        "commentmoderation.html",
+        comments=comments,
+    )
+
+
 # This function handles 'Share' page
 @app.route("/share", methods=['GET'])
 def share():
@@ -982,7 +1107,7 @@ def share():
         post = dbpost.query.filter(dbpost.postid == id).first()
         # Check if the post exists and it's not a bad request
         if not post is None:
-            # we'll send the post to the client
+            # We'll send the post to the client
             # so its data will appear on the 'Share' page
             return render_template("share.html", post=post)
     # Render 400 error page and
@@ -1016,13 +1141,16 @@ def post():
     post = dbpost.query.filter(dbpost.postid == id).first()
     # If there's a post with that id
     if post is not None:
+        # Get Post Flags
+        disablecomments = 'Yes' if (post.flags & 1) == 1 else 'No'
         # Create a form and fill it with post data
         form = PostForm(request.form,
                         postid=post.postid,
                         title=post.title,
                         mediaaddr=post.mediaaddr,
                         content=post.content,
-                        category=post.category)
+                        category=post.category,
+                        disablecomments=disablecomments)
     else:
         # Create an empty form
         form = PostForm(request.form)
@@ -1037,6 +1165,7 @@ def post():
         content = form.content.data
         mediaaddr = form.mediaaddr.data
         postid = form.postid.data
+        flags = 1 if form.disablecomments.data == 'Yes' else 0
         # If postid is not empty then user is editing an existing post
         if postid:
             # Find the post by its id
@@ -1052,6 +1181,7 @@ def post():
             post.title = title
             post.mediaaddr = mediaaddr
             post.content = content
+            post.flags = flags
         # If postid is empty then it's a new post
         # and user is not editing an existing post
         else:
@@ -1065,7 +1195,8 @@ def post():
                              gdatetime=gdatetime,
                              comments=comments,
                              category=category,
-                             mediaaddr=mediaaddr)
+                             mediaaddr=mediaaddr,
+                             flags=flags)
             # Save this new post to database
             db.session.add(newpost)
         # Save changes to the database
@@ -1198,8 +1329,14 @@ def show():
     post['gdatetime'] = result.__dict__['gdatetime']
     post['title'] = result.__dict__['title']
     post['category'] = result.__dict__['category']
-    post['comments'] = result.__dict__['comments']
     post['mediaaddr'] = result.__dict__['mediaaddr']
+    # If user is not admin then we'll show them approved comments
+    if (session['logged_in'] == False):
+        post['comments'] = dbcomment.query.filter(
+            dbcomment.pid == result.__dict__['postid']).filter(
+                dbcomment.status >= 2).count()
+    else:  # If user is admin then we'll show them all comments
+        post['comments'] = result.__dict__['comments']
     # Show the post which was requested by user
     return render_template("show.html",
                            post=post,
@@ -1564,6 +1701,8 @@ def install():
         newconfig['ppp'] = 10
         newconfig['dtformat'] = '%Y %B %d'
         newconfig['calendar'] = 'Jalali'
+        newconfig['autoapproval'] = 'No'
+        newconfig['disablecomments'] = 'No'
         # Save the default password (md5 hash of 'admin') in our new config
         newpwd = hashlib.md5('admin'.encode('utf-8'))
         newconfig['pwd'] = newpwd.hexdigest()

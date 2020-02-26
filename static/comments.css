@@ -101,7 +101,11 @@ p {
 	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.09);
 }
 
-.delete
+.new {
+	background-color: rgba(255, 0, 0, 0.25) !important;
+}
+
+.btn
 {
 	position: relative;
 	float: left;
@@ -111,6 +115,68 @@ p {
 	font-size: 16px;
 	color: #FFFFFF;
 	text-shadow: 0 0 8px #888888;
+	margin-right: 8px;
+}
+
+.bigbtn {
+	z-index: 99;
+	border: none;
+	outline: none;
+	background-color: rgba(255, 255, 255, 1);
+	color: #444444;
+	cursor: pointer;
+	padding: 15px;
+	border-radius: 100%;
+	font-size: 18px;
+	height: 48px;
+	width: 48px;
+	text-align: center;
+	text-shadow: 0px 0px 4px #888888;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25);
+	opacity: 0.5;
+	transition: opacity 0.5s;
+}
+
+.bigbtn:hover {
+	background-color: rgba(255, 255, 255, 1);
+	opacity: 0.75;
+}
+
+.btnText .btnTextBalloon {
+	font-family: Vazir, Tahoma, sans-serif;
+	font-weight: normal;
+	font-size: 16px;
+	visibility: hidden;
+	width: 180px;
+	top: 5px;
+	right: 140%;
+	margin-left: -60px;
+	background-color: black;
+	color: #FFFFFF;
+	text-align: center;
+	padding: 10px 0;
+	border-radius: 6px;
+	opacity: 0;
+	transition: opacity 1s;
+	position: absolute;
+	z-index: 1;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.btnText:hover .btnTextBalloon {
+	visibility: visible;
+	opacity: 1;
+}
+
+.btnText .btnTextBalloon::after {
+	content: " ";
+	position: absolute;
+	top: 50%;
+	left: 100%;
+	margin-top: -7px;
+	border-width: 7px;
+	border-style: solid;
+	border-color: transparent transparent transparent black;
 }
 
 .adminbar {
@@ -191,6 +257,22 @@ input[type=text]:focus, input[type=email]:focus, input[type=url]:focus, textarea
 	resize: vertical;
 }
 
+#home {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+}
+
+footer { 
+	display: block;
+	color: #FFFFFF;
+	font-weight: bold;
+	text-align: center;
+	margin-top: 2em;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .bluebtn {
 	font-family: Vazir, Tahoma, sans-serif;
 	font-weight: bold;
@@ -257,6 +339,23 @@ input[type=text]:focus, input[type=email]:focus, input[type=url]:focus, textarea
 	border-width: 5px;
 	border-style: solid;
 	border-color: black transparent transparent transparent;
+}
+
+@media screen and (max-width: 600px) {
+	
+	.btnText .btnTextBalloon {
+		top: 8px;
+		left: 250%;
+		margin-left: -60px;
+	}
+	
+	.btnText .btnTextBalloon::after {
+		display: none;
+		position: absolute;
+		top: 50%;
+		right: 100%;
+		border-color: transparent black transparent transparent;
+	}	
 }
 
 /* font-Tanha */

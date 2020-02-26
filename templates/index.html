@@ -221,7 +221,7 @@
 			<i class="toolboxicon fas fa-folder"></i>دسته ها
 		</div>
 		<div class="items">
-			<a class="item" href="{{ request.script_root }}/"><i class="toolboxicon fas fa-external-link-alt"></i>انتخاب
+			<a class="item" href="{{ request.script_root }}/"><i class="toolboxicon fas fa-bars"></i>انتخاب
 				همه دسته ها</a>
 			{% if (categories) %}
 			{% for category in categories %}
@@ -232,7 +232,7 @@
 					class="toolboxicon fas fa-pen"></i></a>
 			{% endif %}
 			<a class="item" href="{{ request.script_root }}/?category={{category['catid']}}"><i
-					class="toolboxicon fas fa-external-link-alt"></i>{{category['name']}}</a>
+					class="toolboxicon fas fa-asterisk"></i>{{category['name']}}</a>
 			{% endfor %}
 			{% else %}
 			دسته ای یافت نشد!
@@ -308,7 +308,9 @@
 		<a href="{{ request.script_root }}/post">
 			<i class="toolboxicon fas fa-pen-nib"></i>ارسال پست جدید
 		</a>
-
+		<a href="{{ request.script_root }}/commentmoderation">
+			<i class="toolboxicon fas fa-comments"></i>مدیریت نظرات
+		</a>
 		<a href="{{ request.script_root }}/config">
 			<i class="toolboxicon fas fa-cog"></i>پیکربندی وبلاگ
 		</a>
