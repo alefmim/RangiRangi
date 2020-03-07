@@ -88,6 +88,8 @@ app.secret_key = os.urandom(32)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 csrf = CSRFProtect(app)
 db = SQLAlchemy(app)
+# Global config object
+cfg = {}
 
 
 # Order Columns are currently not being used but we'll use them in the future!
@@ -462,6 +464,77 @@ class LoginForm(FlaskForm):  # Login form
                         })
 
 
+# This function will save config dict in config file
+# and updates the global config object in the memory
+def saveConfig(conf: [str, str]):
+    '''
+    Saves 'conf' in the config file and updates 
+    the global config object in the memory  
+
+    Parameters
+    ----------
+    conf : [str, str]
+            a dictionary which contains the config
+    '''
+    # Update the global config object values to new config values
+    global cfg
+    cfg = conf
+    # Open config file for output and erase its data
+    with open('config.json', 'w') as configFile:
+        # Save new config
+        json.dump(cfg, configFile, indent=4, sort_keys=True)
+
+
+# This function will return a copy of the global config object
+# or load the config file to memory as the the config object
+# if the global config object is empty and has no values
+# or if forceReload is set to True
+def getConfig(forceReload: bool = False) -> [str, str]:
+    '''
+    Returns a copy of the global config object or load 
+    the config file to memory as the the config object
+    if the global config object is empty and has no values
+    or forceReload is set to 'True'
+    
+    Parameters
+    ----------
+    forceReload : bool
+            a boolean which may set to True or False
+            default value is False and it means that
+            if the global config object is not empty
+            then return the global config object but if
+            it's empty then load it form the config file
+            if forceReload is set to True then it will
+            load the config file to memory as the global 
+            config object no matter if it's already 
+            loaded in the memory or not
+
+    Returns
+    -------
+    [str, str]
+            a copy of the global config object
+    '''
+    # Use the global config object
+    global cfg
+    # Load config file to the memory as config object
+    # if it's not loaded yet
+    if not any(cfg) or forceReload:
+        # Check if config file exists
+        # (if application is already installed and configured)
+        try:
+            with open('config.json', 'r') as configFile:
+                cfg = json.load(configFile)
+        except FileNotFoundError:  # This exception means that
+            # the program is not installed and configured yet!
+            # So we'll call install() to make the config and
+            # database files and redirect user to config page
+            return render_template("config.html",
+                                   config=install(),
+                                   form=ConfigForm())
+    # Return the config object
+    return cfg
+
+
 # This function replaces all hashtags in 'rawText' with linked hashtags
 # 'url' must only contain domain name and script path
 # (send request.script_root as its value!)
@@ -528,17 +601,8 @@ def formatDateTime(strDateTime: str, strFormat: str) -> str:
             a string which contains a date/time equal to 
             'strDateTime' but formatted like 'strFormat'
     '''
-    # Check if Jalali Calendar is enabled or not
-    # We'll try opening the config file
-    try:
-        with open('config.json', 'r') as configFile:
-            # This will load config file to the memory as config object
-            config = json.load(configFile)
-    except FileNotFoundError:  # This exception means that
-        # the program is not installed and configured yet!
-        # So we'll call install() to make the config
-        # and database files and redirect user to config page
-        return render_template("config.html", config=install())
+    # Get settings in order to check if Jalali Calendar is enabled or not later
+    config = getConfig()
     # This is where we keep the result!
     result = ''
     # Names of the days of the week
@@ -729,19 +793,8 @@ def index():
     It also handles increasing the hashtags popularity 
     if user clicks on a specific hashtag and requests its page
     '''
-    # Check if config file exists
-    # (if application is already installed and configured)
-    try:
-        with open('config.json', 'r') as configFile:
-            # This will load config file to the memory as config object
-            config = json.load(configFile)
-    except FileNotFoundError:  # This exception means that
-        # the program is not installed and configured yet!
-        # So we'll call install() to make the config and
-        # database files and redirect user to config page
-        return render_template("config.html",
-                               config=install(),
-                               form=ConfigForm())
+    # Get configuration
+    config = getConfig()
     # If someone looks for a specific hashtag
     # we'll increase its popularity by 1
     # Get the hashtag from the request
@@ -814,14 +867,13 @@ def page():
         query = query.order_by(dbpost.comments)
     if sort == 'desccomments':  # Sort by Number of Comments (Descending Order)
         query = query.order_by(dbpost.comments.desc())
-    # Load config file to the memory as config object
-    with open('config.json', 'r') as configFile:
-        config = json.load(configFile)
-        # Get ppp value from config object
-        # and save it in a variable (ppp means Posts Per Page)
-        ppp = config['ppp']
-        # Get date/time format
-        dtformat = config['dtformat']
+    # Get configuration
+    config = getConfig()
+    # Get ppp value from config object
+    # and save it in a variable (ppp means Posts Per Page)
+    ppp = config['ppp']
+    # Get date/time format
+    dtformat = config['dtformat']
     # Limit the results to the number of Posts Per Page
     results = query.offset(pageNum * ppp).limit(ppp)
     # Send "END." if there's no more results to
@@ -880,11 +932,8 @@ def config():
     '''
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
-    # Create a new config object (we'll load data in it later!)
-    config = {}
-    # Load config file to the memory as config object
-    with open('config.json', 'r') as configFile:
-        config = json.load(configFile)
+    # Get current configuration
+    config = getConfig()
     # Form object which holds the request data
     form = ConfigForm(request.form)
     # If user opened the config page without requesting to change the config
@@ -940,10 +989,7 @@ def config():
             # then we'll use the current password in new config
             newconfig['pwd'] = config['pwd']
         # If everything goes well, we'll save the new config to the config file
-        # Open config file for output and erase its data
-        with open('config.json', 'w') as configFile:
-            # Save new config
-            json.dump(newconfig, configFile, indent=4, sort_keys=True)
+        saveConfig(newconfig)
         # Render the config page and fill it with newconfig values
         return render_template("config.html", form=form)
     else:  # If there was any problem during request validation
@@ -972,16 +1018,15 @@ def comments():
         # Renders our custom 400 error page and
         # returns error code 400 'Bad Request' to the client
         return render_template('400.html'), 400
-    # Load config file to the memory as config object
-    with open('config.json', 'r') as configFile:
-        config = json.load(configFile)
-        # Get date/time format
-        dtformat = config['dtformat']
-        # Set autoapproval value to true if it's enabled in config
-        # or user has admin privileges
-        autoapproval = 2 if config['autoapproval'] == 'Yes' \
-            or session['logged_in'] == True else 0
-        disablecomments = config['disablecomments']
+    # Get configuration
+    config = getConfig()
+    # Get date/time format
+    dtformat = config['dtformat']
+    # Set autoapproval value to true if it's enabled in config
+    # or user has admin privileges
+    autoapproval = 2 if config['autoapproval'] == 'Yes' \
+        or session['logged_in'] == True else 0
+    disablecomments = config['disablecomments']
     # Form object which holds the request data
     # We'll set postid value to hidden field
     form = CommentForm(request.form, postid=postid)
@@ -1125,11 +1170,10 @@ def commentmoderation():
     '''
     Renders the comment moderation page
     '''
-    # Load config file to the memory as config object
-    with open('config.json', 'r') as configFile:
-        config = json.load(configFile)
-        # Get date/time format
-        dtformat = config['dtformat']
+    # Get configuration
+    config = getConfig()
+    # Get date/time format
+    dtformat = config['dtformat']
     # Load all comments that require approval
     results = dbcomment.query.filter(dbcomment.status != 3) \
         .order_by(dbcomment.cmtid.asc()).all()
@@ -1391,11 +1435,10 @@ def show():
     # Find its category
     category = dbcategory.query.filter(
         dbcategory.catid == result.category).first()
-    # Load config file to the memory as config object
-    with open('config.json', 'r') as configFile:
-        config = json.load(configFile)
-        # Get date/time format
-        dtformat = config['dtformat']
+    # Get configuration
+    config = getConfig()
+    # Get date/time format
+    dtformat = config['dtformat']
     # Create an empty post! We'll use it to send data to the client
     post = {}
     # Replace hashtags with linked hashtags!
@@ -1707,26 +1750,24 @@ def login():
     form = LoginForm(request.form)
     # Validate the request
     if form.validate_on_submit():
-        # Open config file to check the password stored in it
-        with open('config.json', 'r') as configFile:
-            # Load the config file to config object
-            config = json.load(configFile)
-            # Get password from the request
-            pwd = form.pwd.data
-            # Hash the password
-            pwd = hashlib.md5(pwd.encode('utf-8')).hexdigest()
-            # If the password entered by the user is
-            # the same as the one in our config file
-            if config['pwd'] == pwd:
-                # Login was successful and we'll set 'logged_in' to true
-                # in our session, this will grant the user admin privileges!
-                session['logged_in'] = True
-            # If the password is wrong
-            elif 'pwd' in request.form:
-                # Ask user to enter the password again
-                flash(
-                    tr('Error! You have entered the wrong password, " + \
-                    "Please try again.'))
+        # Get configuration
+        config = getConfig()
+        # Get password from the request
+        pwd = form.pwd.data
+        # Hash the password
+        pwd = hashlib.md5(pwd.encode('utf-8')).hexdigest()
+        # If the password entered by the user is
+        # the same as the one in our config file
+        if config['pwd'] == pwd:
+            # Login was successful and we'll set 'logged_in' to true
+            # in our session, this will grant the user admin privileges!
+            session['logged_in'] = True
+        # If the password is wrong
+        elif 'pwd' in request.form:
+            # Ask user to enter the password again
+            flash(
+                tr('Error! You have entered the wrong password, " + \
+                "Please try again.'))
     # Return to the main page
     return redirect(url_for('index'))
 
@@ -1764,33 +1805,30 @@ def install():
         # Save changes to the database
         db.session.commit()
     # Set the admin logged_in status to True
-
     # and grant the user admin privileges
     session['logged_in'] = True
-    # Create the config file
-    with open('config.json', 'w') as configFile:
-        # Create a new config
-        newconfig = {}
-        # Assign empty values to our configurations
-        newconfig['title'] = ''
-        newconfig['desc'] = ''
-        newconfig['dispname'] = tr('Admin')
-        newconfig['mailaddr'] = ''
-        newconfig['ppp'] = 10
-        newconfig['dtformat'] = '%Y %B %d'
-        newconfig['calendar'] = 'Jalali'
-        newconfig['autoapproval'] = 'No'
-        newconfig['disablecomments'] = 'No'
-        # Save the default password (md5 hash of 'admin') in our new config
-        newpwd = hashlib.md5('admin'.encode('utf-8'))
-        newconfig['pwd'] = newpwd.hexdigest()
-        # Create a config file using our new config
-        json.dump(newconfig, configFile, indent=4, sort_keys=True)
-        # Give user admin's password!
-        flash(tr('Password') + ' :\n\nadmin')
-        # Return this new config object
-        # so we can use it to fill the config page fields
-        return newconfig
+    # Create a new config
+    newconfig = {}
+    # Assign default values to our configuration
+    newconfig['title'] = ''
+    newconfig['desc'] = ''
+    newconfig['dispname'] = tr('Admin')
+    newconfig['mailaddr'] = ''
+    newconfig['ppp'] = 10
+    newconfig['dtformat'] = '%Y %B %d'
+    newconfig['calendar'] = 'Jalali'
+    newconfig['autoapproval'] = 'No'
+    newconfig['disablecomments'] = 'No'
+    # Save the default password (md5 hash of 'admin') in our new config
+    newpwd = hashlib.md5('admin'.encode('utf-8'))
+    newconfig['pwd'] = newpwd.hexdigest()
+    # Create a config file using our new config
+    saveConfig(newconfig)
+    # Give user admin's password!
+    flash(tr('Password') + ' :\n\nadmin')
+    # Return this new config object
+    # so we can use it to fill the config page fields
+    return newconfig
 
 
 # If this module is the main program!
