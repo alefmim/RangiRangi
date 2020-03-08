@@ -64,7 +64,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from flask_inputs import Inputs
-from sqlalchemy import or_
+from sqlalchemy import or_, case, asc, union
 from random import randrange
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -133,7 +133,7 @@ class dbpost(db.Model):  # Post Class (Posts Table)
     comments = db.Column('comments', db.Integer, nullable=False)
     # Multimedia File (Image) Address
     mediaaddr = db.Column('mediaaddr', db.String(256), nullable=True)
-    # Post Flags (NoComment=1)
+    # Post Flags (NoComment=1, Pinned=2)
     flags = db.Column('flags', db.Integer, nullable=False)
     # Defining a foreign key (backref to pid in comments table!)
     posts = db.relationship('dbcomment',
@@ -441,6 +441,10 @@ class PostForm(FlaskForm):  # Post page form
         validators=[
             DataRequired(message=tr('Disabling Comments Setting is Required.'))
         ],
+        choices=[('No', tr('No')), ('Yes', tr('Yes'))])
+    pinned = SelectField(
+        'pinned',
+        validators=[DataRequired(message=tr('Pin Setting is Required.'))],
         choices=[('No', tr('No')), ('Yes', tr('Yes'))])
     postid = IntegerField(
         'postid',
@@ -859,6 +863,10 @@ def page():
         # (We'll put a # before the tag
         # because it's not included in request string! /?tag=python)
         query = query.filter(dbpost.content.contains('#' + tag))
+    # Change the order and show pinned posts first
+    query = query.order_by(
+        db.case((((dbpost.flags.op('&')(2)) == 2, 1), ), else_=0).desc())
+    # Sort the posts as requested by user
     if sort == 'ascdate':  # Sort by Date (Ascending Order)
         query = query.order_by(dbpost.postid)
     if sort == 'descdate' or sort == '':  # Sort by Date (Descending Order)
@@ -906,6 +914,8 @@ def page():
         post['title'] = result.__dict__['title']
         post['category'] = result.__dict__['category']
         post['mediaaddr'] = result.__dict__['mediaaddr']
+        # Set Post Pinned Flag to True if it's set in flags
+        post['pinned'] = True if (result.__dict__['flags'] & 2) == 2 else False
         # If user is not admin then we'll show them approved comments
         if (session['logged_in'] == False):
             post['comments'] = dbcomment.query.filter(
@@ -1260,6 +1270,7 @@ def post():
     if post is not None:
         # Get Post Flags
         disablecomments = 'Yes' if (post.flags & 1) == 1 else 'No'
+        pinned = 'Yes' if (post.flags & 2) == 2 else 'No'
         # Create a form and fill it with post data
         form = PostForm(request.form,
                         postid=post.postid,
@@ -1267,7 +1278,8 @@ def post():
                         mediaaddr=post.mediaaddr,
                         content=post.content,
                         category=post.category,
-                        disablecomments=disablecomments)
+                        disablecomments=disablecomments,
+                        pinned=pinned)
     else:
         # Create an empty form
         form = PostForm(request.form)
@@ -1283,6 +1295,7 @@ def post():
         mediaaddr = form.mediaaddr.data
         postid = form.postid.data
         flags = 1 if form.disablecomments.data == 'Yes' else 0
+        flags = (flags | 2) if form.pinned.data == 'Yes' else (flags & 1)
         # If postid is not empty then user is editing an existing post
         if postid:
             # Find the post by its id

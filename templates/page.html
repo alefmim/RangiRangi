@@ -14,6 +14,11 @@
 					<span class="tooltiptext">تاریخ انتشار مطلب</span>
 				</span> {{ post['datetime'] }}
 				<span class="postbuttons">
+					{% if post['pinned'] %}
+					<span class="far fa-sticky-note tooltip">
+						<span class="tooltiptext">مطلب سنجاق شده</span>
+					</span>
+					{% endif %}
 					{% if admin %}
 					<span onclick="deletepost({{ post['postid'] }})" class="postbutton">
 						<span class="far fa-trash-alt tooltip">
