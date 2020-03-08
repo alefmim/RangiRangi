@@ -64,7 +64,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from flask_inputs import Inputs
-from sqlalchemy import or_, case, asc, union
+from sqlalchemy import or_
 from random import randrange
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -126,7 +126,7 @@ class dbpost(db.Model):  # Post Class (Posts Table)
     # Post Title
     title = db.Column('title', db.String(32), nullable=True)
     # Post Content
-    content = db.Column('content', db.String(512), nullable=False)
+    content = db.Column('content', db.Text, nullable=False)
     # Post Date/Time
     gdatetime = db.Column('datetime', db.String(24), nullable=False)
     # Number of comments on each post
