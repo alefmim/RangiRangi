@@ -788,7 +788,7 @@ def error404(e):
     return render_template('404.html'), 404
 
 
-# This function will generate the required the data to create the sidebar
+# This function will generate the required data to create the sidebar
 @authentication_required
 def sidebar():
     '''
