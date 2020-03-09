@@ -15,6 +15,7 @@ import json
 import hashlib
 import urllib.parse
 import functools
+import logging
 
 from flask import (
     Flask,
@@ -68,6 +69,7 @@ from flask_inputs import Inputs
 from sqlalchemy import or_
 from random import randrange
 from werkzeug.middleware.proxy_fix import ProxyFix
+from logging.handlers import RotatingFileHandler
 
 # Initializations and Basic Configurations
 app = Flask(__name__)
@@ -81,6 +83,7 @@ limiter = Limiter(
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 # Because we don't need it
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
 # This will prevent some attacks
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -91,6 +94,24 @@ csrf = CSRFProtect(app)
 db = SQLAlchemy(app)
 # Global config object
 cfg = {}
+# Log format
+log_formatter = logging.Formatter('%(asctime)s %(levelname)s ' + \
+    '%(processName)s %(name)s %(message)s')
+# Log file
+logFile = 'events.log'
+# Log handler
+log_handler = RotatingFileHandler(logFile,
+                                  mode='a',
+                                  maxBytes=20 * 1024 * 1024,
+                                  backupCount=2,
+                                  encoding=None,
+                                  delay=0)
+# Logger configuration
+log_handler.setFormatter(log_formatter)
+log_handler.setLevel(logging.INFO)
+logger = logging.getLogger('root')
+logger.setLevel(logging.INFO)
+logger.addHandler(log_handler)
 
 
 # Order Columns are currently not being used but we'll use them in the future!
@@ -758,12 +779,33 @@ def login_required(func):
 
 
 # Add some headers to prevent some attacks
+# and log the events
 @app.after_request
-def add_header(response):
+def after_request(response):
+    '''
+    Add some headers to prevent some attacks and log the events
+    '''
+    # Add some headers
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-XSS-Protection'] = '1; mode=block'
+    # Log the request and response
+    logger.info('<' + request.method + '>' + \
+        request.url + ' - '  + response.status)
     return response
+
+
+# This function will run after each request
+# We'll log each request and errors (if there's any error) here
+@app.teardown_request
+def logErrors(error=None):
+    '''
+    Log the errors into the log file
+    '''
+    if error:  # If there's any error
+        # Log the request and error
+        logger.error('<' + request.method + '>' + \
+            request.url + ' - ' + repr(error))
 
 
 # 400 error page
@@ -1131,6 +1173,9 @@ def comments():
         flash('\n'.join('%s' % val
                       for val in form.errors.values()) \
                           .replace('[\'','').replace('\']',''))
+    # Redirect to show post page if it was the referrer
+    if '/show?' in request.referrer:
+        return redirect(request.referrer)
     # Render the comments page
     return render_template("comments.html",
                            comments=comments,
@@ -1542,7 +1587,7 @@ def show():
                            comments=comments,
                            disablecomments=disablecomments,
                            sidebar=sidebar(),
-                           form=CommentForm(),
+                           form=CommentForm(postid=id),
                            admin=session['logged_in'])
 
 
@@ -1847,8 +1892,8 @@ def login():
         elif 'pwd' in request.form:
             # Ask user to enter the password again
             flash(
-                tr('Error! You have entered the wrong password, " + \
-                "Please try again.'))
+                tr('Error! You have entered the wrong password, ' + \
+                'Please try again.'))
     # Return to last visited page or the main page
     return redirect(request.referrer or url_for('index'))
 

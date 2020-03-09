@@ -3,3 +3,4 @@ todo.txt
 blog*.db
 config*.json
 blog.py.*
+*.log

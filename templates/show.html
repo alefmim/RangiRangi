@@ -165,7 +165,7 @@
     {% endif %}
     </div>
     {% if ((admin) or (disablecomments != 'Yes')) %}
-    <form class="commentform" action="{{ request.script_root }}/comments?postid={{ postid }}" method="post"
+    <form class="commentform" action="{{ request.script_root }}/comments?postid={{ post['postid'] }}" method="post"
         accept-charset="utf-8">
 
         {{ form.csrf_token }}
