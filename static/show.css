@@ -405,6 +405,7 @@ footer {
 	font-weight: normal;
 	font-size: 18px;
 	color: #444444;
+	text-align: justify;
 	text-shadow: 0 0 8px #888888;
 	padding: 0px 20px;
 }

@@ -130,9 +130,7 @@
     </a>
     {% endif %}
 </div>
-
 <script>
-
     {% with messages = get_flashed_messages() %}
     {% if messages %}
     var messages = {{ messages | safe }};
@@ -155,9 +153,8 @@
             }
         });
     }
-
+    {% if admin %}
     var xhttp = new XMLHttpRequest();
-
     function newlink() {
         var addr = prompt("لطفاً آدرس پیوند را وارد کنید");
 
@@ -257,4 +254,5 @@
         xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
         xhttp.send();
     }
+    {% endif %}
 </script>

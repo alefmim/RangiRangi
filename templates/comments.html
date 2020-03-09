@@ -21,6 +21,7 @@
 	</div>
 
 	<script>
+		{% if admin %}
 		var xhttp = new XMLHttpRequest();
 		function deletecomment(id) {
 			if (id < 1) return;
@@ -50,6 +51,7 @@
 			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
 			xhttp.send();
 		}
+		{% endif %}
 		{% with messages = get_flashed_messages() %}
 		{% if messages %}
 		var messages = {{ messages | safe }};

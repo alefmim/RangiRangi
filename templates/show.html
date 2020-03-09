@@ -20,6 +20,7 @@
             </div>
         </div>
     </div>
+    {% if admin %}
     <script>
         var xhttp = new XMLHttpRequest();
         function deletepost(id) {
@@ -37,7 +38,6 @@
             xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
             xhttp.send();
         }
-        {% if admin %}
         function deletecomment(id) {
             if (id < 1) return;
 
@@ -66,8 +66,8 @@
             xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
             xhttp.send();
         }
-        {% endif %}
     </script>
+    {% endif %}
     <div class="post">
         {% if post['mediaaddr'] %}
         <img class="image" src="{{ post['mediaaddr'] }}">

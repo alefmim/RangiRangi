@@ -42,7 +42,7 @@
 			args += "sort=descdate&"
 		if (tag != null)
 			args += "tag=" + tag + "&"
-
+		{% if admin %}
 		function deletepost(id) {
 			if (id < 1) return;
 
@@ -58,6 +58,7 @@
 			xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
 			xhttp.send();
 		}
+		{% endif %}
 		function insertPosts(resp) {
 			if (done) return;
 
