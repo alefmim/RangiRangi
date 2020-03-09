@@ -19,6 +19,13 @@
 						<span class="tooltiptext">مطلب سنجاق شده</span>
 					</span>
 					{% endif %}
+					<span
+						onclick="window.open('{{ request.script_root }}/show?id={{ post['postid'] }}','comments','status=yes, scrollbars=yes, toolbar=no, menubar=no, location=no , width=700px, height=800px, top=150, left=150')"
+						class="postbutton">
+						<span class="fas fa-expand tooltip">
+							<span class="tooltiptext">مشاهده مطلب</span>
+						</span>
+					</span>
 					{% if admin %}
 					<span onclick="deletepost({{ post['postid'] }})" class="postbutton">
 						<span class="far fa-trash-alt tooltip">

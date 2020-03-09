@@ -54,6 +54,7 @@ from wtforms import (
     StringField,
     IntegerField,
     PasswordField,
+    TextAreaField,
 )
 from flask_wtf.csrf import (
     CSRFProtect,
@@ -414,17 +415,16 @@ class PostForm(FlaskForm):  # Post page form
                             message=tr('Title must be between '+ \
                                        '1 and 32 characters long.'))],
                         render_kw={'maxlength': 32})
-    content = StringField('content',
+    content = TextAreaField('content',
                           validators=[
                               DataRequired(message=tr('Content is Required.')),
-                              Length(min=1, max=512,
+                              Length(min=1, max=65536,
                                 message=tr('Content must be between '+ \
-                                           '1 and 512 characters long.'))
+                                           '1 and 65536 characters long.'))
                           ],
-                          widget=TextArea(),
                           render_kw={
                               'rows': 5,
-                              'maxlength': 512
+                              'maxlength': 65536
                           })
     mediaaddr = URLField(
         'mediaaddr',
@@ -788,29 +788,14 @@ def error404(e):
     return render_template('404.html'), 404
 
 
-# This function handles our main page
-@app.route("/")
+# This function will generate the required the data to create the sidebar
 @authentication_required
-def index():
+def sidebar():
     '''
-    Renders the main page or Calls install() if blog is not configured yet
-    It also handles increasing the hashtags popularity 
-    if user clicks on a specific hashtag and requests its page
+    Generates the required data to create the sidebar
     '''
     # Get configuration
     config = getConfig()
-    # If someone looks for a specific hashtag
-    # we'll increase its popularity by 1
-    # Get the hashtag from the request
-    tag = request.args.get('tag', default='', type=str)
-    # Find the hashtag in database
-    t = dbtag.query.filter(dbtag.keyword == tag).first()
-    # If it's not a bad request and hashtag exists in the database
-    if t is not None:
-        # Increase its popularity by 1
-        t.popularity = t.popularity + 1
-        # Save changes to the database
-        db.session.commit()
     # Find all categories and save it to 'categories' array
     categories = dbcategory.query.all()
     # We'll show 4 most popular hashtags (favtags)
@@ -824,14 +809,41 @@ def index():
     # Render the page with the provided data!
     # Create login form
     form = LoginForm()
-    return render_template("index.html",
-                           config=config,
-                           categories=categories,
-                           favtags=favtags,
-                           frqtags=frqtags,
-                           links=links,
-                           form=form,
-                           admin=session['logged_in'])
+    # Create the an object and fill it with the generated data
+    items = {}
+    items['config'] = config
+    items['categories'] = categories
+    items['favtags'] = favtags
+    items['frqtags'] = frqtags
+    items['links'] = links
+    items['loginform'] = form
+    items['admin'] = session['logged_in']
+    # Return the sidebar object
+    return items
+
+
+# This function handles our main page
+@app.route("/")
+def index():
+    '''
+    Renders the main page or Calls install() if blog is not configured yet
+    It also handles increasing the hashtags popularity 
+    if user clicks on a specific hashtag and requests its page
+    '''
+    # If someone looks for a specific hashtag
+    # we'll increase its popularity by 1
+    # Get the hashtag from the request
+    tag = request.args.get('tag', default='', type=str)
+    # Find the hashtag in database
+    t = dbtag.query.filter(dbtag.keyword == tag).first()
+    # If it's not a bad request and hashtag exists in the database
+    if t is not None:
+        # Increase its popularity by 1
+        t.popularity = t.popularity + 1
+        # Save changes to the database
+        db.session.commit()
+    # Render the main page
+    return render_template("index.html", sidebar=sidebar(), config=getConfig())
 
 
 # This function sends the posts to the client
@@ -903,8 +915,27 @@ def page():
         post = {}  # A single post (we'll assign its values below!)
         # We'll replace hashtags with linked hashtags
         # using the 'prcText' function
-        post['content'] = prcText(result.__dict__['content'],
-                                  request.script_root)
+        # If the content length is greater than 512 characters then
+        # we'll just show the first 512 characters of the post content
+        # and also remove the last word in the first 512 characters
+        # because it may be an incomplete word
+        if (len(result.__dict__['content']) > 512):
+            # Get first 512 characters of the post content
+            content = result.__dict__['content'][0:512]
+            # remove the last word in the first 512 characters of
+            # the post content because it may be an incomplete word
+            content = content[0:content.rfind(' ')]
+            # Markup Hashtags
+            post['content'] = prcText(content, request.script_root)
+            # Add continue reading link to the end of the post content
+            post['content'] = post['content'] + Markup('...<br><br>' + \
+                '<a href="'+ request.script_root + '/show?id=' + \
+                str(result.__dict__['postid']) + '" class="hashtag">' + \
+                'مشاهده ادامه مطلب...</a>')
+        else:
+            # Markup hashtags
+            post['content'] = prcText(result.__dict__['content'],
+                                      request.script_root)
         # And format date/time using the 'formatDateTime' function
         post['datetime'] = formatDateTime(result.__dict__['gdatetime'],
                                           dtformat)
@@ -1092,8 +1123,6 @@ def comments():
         comments.append(comment)
     # Sort Comments and show new comments first!
     comments.reverse()
-    # Save changes to database
-    db.session.commit()
     # Disable Comments if necessary
     if disablecomments != 'Yes':
         disablecomments = 'Yes' if (post.flags & 1) == 1 else 'No'
@@ -1471,10 +1500,49 @@ def show():
                 dbcomment.status >= 2).count()
     else:  # If user is admin then we'll show them all comments
         post['comments'] = result.__dict__['comments']
+    # Set autoapproval value to true if it's enabled in config
+    # or user has admin privileges
+    autoapproval = 2 if config['autoapproval'] == 'Yes' \
+        or session['logged_in'] == True else 0
+    disablecomments = config['disablecomments']
+    # Form object which holds the request data
+    # We'll set postid value to hidden field
+    form = CommentForm(request.form, postid=id)
+    # Load all comments that belong to a specific post from the database
+    results = dbcomment.query.filter(dbcomment.pid == id).all()
+    # Array of our comments (results)
+    comments = []
+    # We'll use this loop to run the 'formatDateTime' function
+    # on each comment to format its date/time
+    for item in results:
+        comment = {}  # A single comment (we'll assign its values below!)
+        # And format date/time using the 'formatDateTime' function
+        comment['datetime'] = formatDateTime(item.__dict__['gdatetime'],
+                                             dtformat)
+        # Rest is the same without any modification!
+        comment['content'] = item.__dict__['content']
+        comment['cmtid'] = item.__dict__['cmtid']
+        comment['name'] = item.__dict__['name']
+        comment['website'] = item.__dict__['website']
+        comment['emailaddr'] = item.__dict__['emailaddr']
+        comment['status'] = item.__dict__['status']
+        # If user is admin then we'll remove comment's unseen status
+        if (session['logged_in'] == True):
+            item.status = item.status | 1
+        # Put this comment in our results
+        comments.append(comment)
+    # Sort Comments and show new comments first!
+    comments.reverse()
+    # Disable Comments if necessary
+    if disablecomments != 'Yes':
+        disablecomments = 'Yes' if (result.flags & 1) == 1 else 'No'
     # Show the post which was requested by user
     return render_template("show.html",
                            post=post,
-                           category=category,
+                           comments=comments,
+                           disablecomments=disablecomments,
+                           sidebar=sidebar(),
+                           form=CommentForm(),
                            admin=session['logged_in'])
 
 
@@ -1781,8 +1849,8 @@ def login():
             flash(
                 tr('Error! You have entered the wrong password, " + \
                 "Please try again.'))
-    # Return to the main page
-    return redirect(url_for('index'))
+    # Return to last visited page or the main page
+    return redirect(request.referrer or url_for('index'))
 
 
 # This function handles the logout process

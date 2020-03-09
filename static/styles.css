@@ -122,7 +122,7 @@ footer {
 .footer {
 	direction: ltr;
 	font-family: courier, courier new, serif;
-	font-size: 12px;
+	font-size: 0.75em;
 	opacity: 0.8;
 }
 
