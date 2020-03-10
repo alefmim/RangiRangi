@@ -101,11 +101,11 @@ logFormatter = logging.Formatter('%(asctime)s %(levelname)s ' + \
 logFile = 'events.log'
 # Log handler
 logHandler = RotatingFileHandler(logFile,
-                                  mode='a',
-                                  maxBytes=20 * 1024 * 1024,
-                                  backupCount=2,
-                                  encoding=None,
-                                  delay=0)
+                                 mode='a',
+                                 maxBytes=20 * 1024 * 1024,
+                                 backupCount=2,
+                                 encoding=None,
+                                 delay=0)
 # Logger configuration
 logHandler.setFormatter(logFormatter)
 logHandler.setLevel(logging.INFO)

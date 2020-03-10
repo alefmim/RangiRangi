@@ -255,6 +255,12 @@ footer {
 	right: 24px;
 }
 
+.widgetbox {
+	width: 300px !important;
+    padding-right: 8px !important;
+    padding-left: 8px !important;
+}
+
 @media screen and (max-width: 600px) {
 	.header {
 		background: linear-gradient(90deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));

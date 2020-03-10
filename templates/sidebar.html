@@ -129,6 +129,9 @@
         <i class="toolboxicon fas fa-sign-out-alt"></i>خروج
     </a>
     {% endif %}
+    <div class="widgetbox">
+        {% include 'widgets.html' %}
+    </div>
 </div>
 <script>
     {% with messages = get_flashed_messages() %}
