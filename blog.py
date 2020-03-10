@@ -95,23 +95,23 @@ db = SQLAlchemy(app)
 # Global config object
 cfg = {}
 # Log format
-log_formatter = logging.Formatter('%(asctime)s %(levelname)s ' + \
+logFormatter = logging.Formatter('%(asctime)s %(levelname)s ' + \
     '%(processName)s %(name)s %(message)s')
 # Log file
 logFile = 'events.log'
 # Log handler
-log_handler = RotatingFileHandler(logFile,
+logHandler = RotatingFileHandler(logFile,
                                   mode='a',
                                   maxBytes=20 * 1024 * 1024,
                                   backupCount=2,
                                   encoding=None,
                                   delay=0)
 # Logger configuration
-log_handler.setFormatter(log_formatter)
-log_handler.setLevel(logging.INFO)
+logHandler.setFormatter(logFormatter)
+logHandler.setLevel(logging.INFO)
 logger = logging.getLogger('root')
 logger.setLevel(logging.INFO)
-logger.addHandler(log_handler)
+logger.addHandler(logHandler)
 
 
 # Order Columns are currently not being used but we'll use them in the future!
