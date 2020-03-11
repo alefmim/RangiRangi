@@ -1163,6 +1163,8 @@ def comments():
             result.status = result.status | 1
         # Put this comment in our results
         comments.append(comment)
+    # Save changes to the database
+    db.session.commit()
     # Sort Comments and show new comments first!
     comments.reverse()
     # Disable Comments if necessary
