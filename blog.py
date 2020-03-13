@@ -871,7 +871,7 @@ def index():
     if user clicks on a specific hashtag and requests its page
     '''
     # Check if the program is installed and configured yet!
-    # if it's not installed and configured yet then 
+    # if it's not installed and configured yet then
     # we'll call install() to make the config and
     # database files and redirect user to the config page
     if not os.path.isfile('config.json'):
