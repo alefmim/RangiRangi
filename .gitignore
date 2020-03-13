@@ -4,3 +4,4 @@ blog*.db
 config*.json
 blog.py.*
 *.log
+*.cmd
