@@ -343,7 +343,7 @@ footer {
 
 .btnText {
 	position: relative;
-	display: inline-block;
+	display: inline-block !important;
 }
 
 .btnText .btnTextBalloon {
