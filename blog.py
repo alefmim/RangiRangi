@@ -553,9 +553,7 @@ def getConfig(forceReload: bool = False) -> [str, str]:
             # the program is not installed and configured yet!
             # So we'll call install() to make the config and
             # database files and redirect user to config page
-            return render_template("config.html",
-                                   config=install(),
-                                   form=ConfigForm())
+            cfg = install()
     # Return the config object
     return cfg
 
@@ -872,6 +870,16 @@ def index():
     It also handles increasing the hashtags popularity 
     if user clicks on a specific hashtag and requests its page
     '''
+    # Check if the program is installed and configured yet!
+    # if it's not installed and configured yet then 
+    # we'll call install() to make the config and
+    # database files and redirect user to the config page
+    if not os.path.isfile('config.json'):
+        return render_template("config.html",
+                               config=getConfig(),
+                               form=ConfigForm())
+    # Get the config values
+    conf = getConfig()
     # If someone looks for a specific hashtag
     # we'll increase its popularity by 1
     # Get the hashtag from the request
@@ -885,7 +893,7 @@ def index():
         # Save changes to the database
         db.session.commit()
     # Render the main page
-    return render_template("index.html", sidebar=sidebar(), config=getConfig())
+    return render_template("index.html", sidebar=sidebar(), config=conf)
 
 
 # This function sends the posts to the client
@@ -1293,6 +1301,7 @@ def commentmoderation():
     return render_template(
         "commentmoderation.html",
         comments=comments,
+        sidebar=sidebar(),
     )
 
 
