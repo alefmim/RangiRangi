@@ -58,7 +58,7 @@ A simple flask based microblogging cms written in python
 </div>
 
 ```powershell
-pip3 install Flask Werkzeug future jdatetime Flask-Limiter Flask-Inputs Flask-SQLAlchemy WTForms urllib3 requests SQLAlchemy
+pip3 install Flask Werkzeug future jdatetime Flask-Limiter Flask-Inputs Flask-SQLAlchemy WTForms flask_wtf urllib3 requests SQLAlchemy
 pip3 install -Iv flask-request-validator==2.0.0
 ```
 <div dir="rtl">
