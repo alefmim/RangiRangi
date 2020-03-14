@@ -872,12 +872,12 @@ def index():
     '''
     # Check if the program is installed and configured yet!
     # if it's not installed and configured yet then
-    # we'll call install() to make the config and
-    # database files and redirect user to the config page
+    # we'll call install() to generate the default config
+    # and make database file then we'll call saveConfig()
+    # to make the config file and redirect user to the config page
     if not os.path.isfile('config.json'):
-        return render_template("config.html",
-                               config=getConfig(),
-                               form=ConfigForm())
+        saveConfig(install())
+        return redirect(url_for('config'))
     # Get the config values
     conf = getConfig()
     # If someone looks for a specific hashtag
