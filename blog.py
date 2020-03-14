@@ -94,13 +94,15 @@ csrf = CSRFProtect(app)
 db = SQLAlchemy(app)
 # Global config object
 cfg = {}
+# Config file
+CONFIG_FILE = 'config.json'
+# Log file
+LOG_FILE = 'events.log'
 # Log format
 logFormatter = logging.Formatter('%(asctime)s %(levelname)s ' + \
     '%(processName)s %(name)s %(message)s')
-# Log file
-logFile = 'events.log'
 # Log handler
-logHandler = RotatingFileHandler(logFile,
+logHandler = RotatingFileHandler(LOG_FILE,
                                  mode='a',
                                  maxBytes=20 * 1024 * 1024,
                                  backupCount=2,
@@ -505,7 +507,7 @@ def saveConfig(conf: [str, str]):
     global cfg
     cfg = conf
     # Open config file for output and erase its data
-    with open('config.json', 'w') as configFile:
+    with open(CONFIG_FILE, 'w') as configFile:
         # Save new config
         json.dump(cfg, configFile, indent=4, sort_keys=True)
 
@@ -547,7 +549,7 @@ def getConfig(forceReload: bool = False) -> [str, str]:
         # Check if config file exists
         # (if application is already installed and configured)
         try:
-            with open('config.json', 'r') as configFile:
+            with open(CONFIG_FILE, 'r') as configFile:
                 cfg = json.load(configFile)
         except FileNotFoundError:  # This exception means that
             # the program is not installed and configured yet!
@@ -875,7 +877,7 @@ def index():
     # we'll call install() to generate the default config
     # and make database file then we'll call saveConfig()
     # to make the config file and redirect user to the config page
-    if not os.path.isfile('config.json'):
+    if not os.path.isfile(CONFIG_FILE):
         saveConfig(install())
         return redirect(url_for('config'))
     # Get the config values
