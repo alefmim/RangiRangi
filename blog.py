@@ -65,7 +65,6 @@ from flask_wtf import FlaskForm
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
-from flask_inputs import Inputs
 from sqlalchemy import or_
 from random import randrange
 from werkzeug.middleware.proxy_fix import ProxyFix
