@@ -64,6 +64,7 @@ from flask_wtf.csrf import (
 from flask_wtf import FlaskForm
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from random import randrange
@@ -86,11 +87,15 @@ app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
 # This will prevent some attacks
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
+# Flask-Caching related configs
+app.config["CACHE_TYPE"] = "simple"
+app.config["CACHE_DEFAULT_TIMEOUT"] = 300
 # Assign a 32 bytes length random value to app.secret_key
 app.secret_key = os.urandom(32)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 csrf = CSRFProtect(app)
 db = SQLAlchemy(app)
+cache = Cache(app)
 # Global config object
 cfg = {}
 # Config file
@@ -246,8 +251,28 @@ class dblink(db.Model):  # Link Class (Links Table)
         self.order = order  # Link Order
 
 
+# This function will open the translations.json file
+# and returns its data as a dictionary
+@cache.memoize()
+def getTranslations():
+    ''' Opens translations.json file and returns
+        its data as a dictionary.
+    '''
+    # Open translation.json file
+    try:
+        with open('translation.json', 'r',
+                  encoding='utf-8') as translationFile:
+            # Load translation.json file to memory as translations object
+            translations = json.load(translationFile)
+    except (FileNotFoundError, ValueError
+            ):  # This exception means there's no translation.json file
+        translations = {}
+    # Return translations
+    return translations
+
+
 # This function will look for translation of
-# the given string in translation.json file
+# the given string in translations dictionary
 def tr(text: str) -> str:
     ''' Looks for translation of 'text' in translation.json file
 
@@ -261,24 +286,16 @@ def tr(text: str) -> str:
     str
             mapped string to 'text' in translation.json file
     '''
-    # This will prevent some errors!
-    translate = {}
-    # Open translation.json file
-    try:
-        with open('translation.json', 'r', encoding='utf-8') as translations:
-            # Load translation.json file to memory as translate object
-            translate = json.load(translations)
-    except (FileNotFoundError, ValueError
-            ):  # This exception means there's no translation.json file
-        # So We'll return the given persian/farsi text
-        return text
-    # Return mapped string to 'text' in the translation.json file
+    # Get translations from translations.json file
+    # and save it to translations dictionary
+    translations = getTranslations()
+    # Return mapped string to 'text' in the translations dictionary
     try:
         # Return translation if it exists
         # or return the given string if there's no translation!
-        return translate[text] if translate[text] else text
+        return translations[text] if translations[text] else text
     except KeyError:  # This exception means there's no match for given string
-        # So We'll return the given persian/farsi text
+        # So We'll return the given text
         return text
 
 
@@ -363,19 +380,14 @@ class ConfigForm(FlaskForm):  # Config page form
             'minlength': 8,
             'maxlength': 128
         })
-    confirmpwd = PasswordField(
-        'confirmpwd',
-        validators=[Optional(),
-                    Length(min=8, max=128,
-                        message=tr('New Password must be '+ \
-                                   'between 8 and 128 characters long.')),
-                    EqualTo('newpwd',
-                        message=tr('New passwords do not match.'))],
-        id='pwd2',
-        render_kw={
-            'minlength': 8,
-            'maxlength': 128
-        })
+    confirmpwd = PasswordField('confirmpwd',
+                               validators=[Optional(),
+                                           Length(min=8, max=128)],
+                               id='pwd2',
+                               render_kw={
+                                   'minlength': 8,
+                                   'maxlength': 128
+                               })
     ppp = IntegerField(
         'ppp',
         validators=[InputRequired(tr('Posts Per Page Setting Required.')),
@@ -605,6 +617,7 @@ def prcText(rawText: str, url: str) -> str:
 
 
 # This function will format date/time
+@cache.memoize()
 def formatDateTime(strDateTime: str, strFormat: str) -> str:
     '''
     Formats the 'strDateTime' using the 'strFormat' value
@@ -1082,8 +1095,10 @@ def config():
             newconfig['pwd'] = config['pwd']
         # If everything goes well, we'll save the new config to the config file
         saveConfig(newconfig)
+        # Return to main page
+        return redirect(url_for('index'))
         # Render the config page and fill it with newconfig values
-        return render_template("config.html", form=form)
+        #return render_template("config.html", form=form)
     else:  # If there was any problem during request validation
         # Show error messages
         flash('\n'.join('%s' % val
@@ -1588,6 +1603,8 @@ def show():
             item.status = item.status | 1
         # Put this comment in our results
         comments.append(comment)
+    # Save changes to the database
+    db.session.commit()
     # Sort Comments and show new comments first!
     comments.reverse()
     # Disable Comments if necessary

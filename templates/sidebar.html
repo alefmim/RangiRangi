@@ -161,11 +161,11 @@
     function newlink() {
         var addr = prompt("لطفاً آدرس پیوند را وارد کنید");
 
-        if (addr == "") return;
+        if (addr == null || addr == "") return;
 
         var name = prompt("لطفاً نام پیوند را وارد کنید");
 
-        if (name == "") return;
+        if (name == null || name == "") return;
 
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200)
@@ -181,11 +181,11 @@
     function editlink(id, linkname, linkaddress) {
         var addr = prompt("لطفاً آدرس جدید پیوند را وارد کنید", linkaddress);
 
-        if (addr == "") return;
+        if (addr == null || addr == "") return;
 
         var name = prompt("لطفاً نام جدید پیوند را وارد کنید", linkname);
 
-        if (name == "") return;
+        if (name == null || name == "") return;
 
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200)
@@ -215,7 +215,7 @@
     function newcategory() {
         var name = prompt("لطفاً نام دسته جدید را وارد کنید");
 
-        if (name == null) return;
+        if (name == null || name == "") return;
 
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200)
@@ -231,7 +231,7 @@
     function editcategory(id, name) {
         var name = prompt("لطفاً نام جدید دسته را وارد کنید", name);
 
-        if (name == "") return;
+        if (name == null || name == "") return;
 
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200)

@@ -102,20 +102,11 @@
 					|| (document.getElementById('pwd1').value.length >= 8))) {
 				document.getElementById('pwd1').style.color = '#22FF22';
 				document.getElementById('pwd2').style.color = '#22FF22';
-				document.getElementById('submit').style.color = '#FFFFFF';
-				document.getElementById('submit').style.backgroundColor = "#2288FF";
-				document.getElementById('submit').style.opacity = 1;
-				document.getElementById('submit').disabled = false;
-
 				return true;
 			} else {
 				document.getElementById('pwd1').style.color = '#FF2222';
 				document.getElementById('pwd2').style.color = '#FF2222';
-				document.getElementById('submit').style.color = '#888888';
-				document.getElementById('submit').style.backgroundColor = "#44AAFF";
-				document.getElementById('submit').style.opacity = 0.5;
-				document.getElementById('submit').disabled = true;
-
+				document.getElementById('pwd1').focus();
 				return false;
 			}
 		}
