@@ -4,6 +4,7 @@ build/
 dist/
 blog_pkg_*/
 __pycache__/
+htmlcov/
 todo.txt
 config*.json
 blog.py.*
