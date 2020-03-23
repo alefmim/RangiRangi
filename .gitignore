@@ -4,8 +4,8 @@ dist/
 blog_pkg_*/
 __pycache__/
 todo.txt
-blog*.db
 config*.json
 blog.py.*
+*.db
 *.log
 *.cmd
