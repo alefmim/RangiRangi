@@ -1,0 +1,4 @@
+include blog/templates/*
+include blog/static/*
+include blog/static/fonts/*
+include blog/translation.json

@@ -17,8 +17,10 @@ import urllib.parse
 import functools
 import logging
 
+from blog import *
 from flask import (
     Flask,
+    Blueprint,
     render_template,
     request,
     Response,
@@ -71,28 +73,14 @@ from random import randrange
 from werkzeug.middleware.proxy_fix import ProxyFix
 from logging.handlers import RotatingFileHandler
 
-# Initializations and Basic Configurations
-app = Flask(__name__)
+# self.app = app
+app = create_app()
 limiter = Limiter(
     app,
     key_func=get_remote_address,
     # Maximum allowed number of requests per second
     default_limits=["3 per second"],
 )
-# Database connection string
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-# Because we don't need it
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
-# This will prevent some attacks
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-# Flask-Caching related configs
-app.config["CACHE_TYPE"] = "simple"
-app.config["CACHE_DEFAULT_TIMEOUT"] = 300
-# Assign a 32 bytes length random value to app.secret_key
-app.secret_key = os.urandom(32)
-app.wsgi_app = ProxyFix(app.wsgi_app)
 csrf = CSRFProtect(app)
 db = SQLAlchemy(app)
 cache = Cache(app)
@@ -500,6 +488,53 @@ class LoginForm(FlaskForm):  # Login form
                             'minlength': 5,
                             'maxlength': 128
                         })
+
+
+# This function handles the installation process
+# and creating the config file and the database
+def install():
+    '''
+    Calls db.create_all() to create the database and its tables
+    And creates a basic config and return it as result
+
+    Returns
+    -------
+    dictionary
+            a Dictionary which contains the default config
+    '''
+    # Create the database file and its tables
+    db.create_all()
+    # Create a category (to prevent errors!)
+    if dbcategory.query.count() == 0:
+        category = dbcategory(tr('Other'), 0)
+        db.session.add(category)
+        # Save changes to the database
+        db.session.commit()
+    # Set the admin logged_in status to True
+    # and grant the user admin privileges
+    session['logged_in'] = True
+    # Create a new config
+    newconfig = {}
+    # Assign default values to our configuration
+    newconfig['title'] = ''
+    newconfig['desc'] = ''
+    newconfig['dispname'] = tr('Admin')
+    newconfig['mailaddr'] = ''
+    newconfig['ppp'] = 10
+    newconfig['dtformat'] = '%Y %B %d'
+    newconfig['calendar'] = 'Jalali'
+    newconfig['autoapproval'] = 'No'
+    newconfig['disablecomments'] = 'No'
+    # Save the default password (md5 hash of 'admin') in our new config
+    newpwd = hashlib.md5('admin'.encode('utf-8'))
+    newconfig['pwd'] = newpwd.hexdigest()
+    # Create a config file using our new config
+    saveConfig(newconfig)
+    # Give user admin's password!
+    flash(tr('Password') + ' :\n\nadmin')
+    # Return this new config object
+    # so we can use it to fill the config page fields
+    return newconfig
 
 
 # This function will save config dict in config file
@@ -1937,56 +1972,3 @@ def logout():
     session.pop('logged_in', None)
     # Return to the main page
     return redirect(url_for('index'))
-
-
-# This function handles the installation process
-# and creating the config file and the database
-def install():
-    '''
-    Calls db.create_all() to create the database and its tables
-    And creates a basic config and return it as result
-
-    Returns
-    -------
-    dictionary
-            a Dictionary which contains the default config
-    '''
-    # Create the database file and its tables
-    db.create_all()
-    # Create a category (to prevent errors!)
-    if dbcategory.query.count() == 0:
-        category = dbcategory(tr('Other'), 0)
-        db.session.add(category)
-        # Save changes to the database
-        db.session.commit()
-    # Set the admin logged_in status to True
-    # and grant the user admin privileges
-    session['logged_in'] = True
-    # Create a new config
-    newconfig = {}
-    # Assign default values to our configuration
-    newconfig['title'] = ''
-    newconfig['desc'] = ''
-    newconfig['dispname'] = tr('Admin')
-    newconfig['mailaddr'] = ''
-    newconfig['ppp'] = 10
-    newconfig['dtformat'] = '%Y %B %d'
-    newconfig['calendar'] = 'Jalali'
-    newconfig['autoapproval'] = 'No'
-    newconfig['disablecomments'] = 'No'
-    # Save the default password (md5 hash of 'admin') in our new config
-    newpwd = hashlib.md5('admin'.encode('utf-8'))
-    newconfig['pwd'] = newpwd.hexdigest()
-    # Create a config file using our new config
-    saveConfig(newconfig)
-    # Give user admin's password!
-    flash(tr('Password') + ' :\n\nadmin')
-    # Return this new config object
-    # so we can use it to fill the config page fields
-    return newconfig
-
-
-# If this module is the main program!
-if __name__ == '__main__':
-    # Run the program (For development purposes only!)
-    app.run(debug=True)
