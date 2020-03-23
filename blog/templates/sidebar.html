@@ -173,9 +173,11 @@
             else if (this.readyState == 4 && this.status == 401)
                 alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
         };
-        xhttp.open("POST", "{{ request.script_root }}/addlink?name=" + name + "&address=" + encodeURIComponent(addr));
+        xhttp.open("POST", "{{ request.script_root }}/addlink");
         xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
-        xhttp.send();
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        data = JSON.stringify({ "name": name, "address": encodeURIComponent(addr) });
+        xhttp.send(data);
     }
 
     function editlink(id, linkname, linkaddress) {
@@ -193,9 +195,11 @@
             else if (this.readyState == 4 && this.status == 401)
                 alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
         };
-        xhttp.open("POST", "{{ request.script_root }}/editlink?id=" + id + "&name=" + name + "&address=" + encodeURIComponent(addr));
+        xhttp.open("POST", "{{ request.script_root }}/editlink");
         xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
-        xhttp.send();
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        data = JSON.stringify({ "id": id, "name": name, "address": encodeURIComponent(addr) });
+        xhttp.send(data);
     }
 
     function removelink(id) {
@@ -207,9 +211,11 @@
             else if (this.readyState == 4 && this.status == 401)
                 alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
         };
-        xhttp.open("POST", "{{ request.script_root }}/removelink?id=" + id);
+        xhttp.open("POST", "{{ request.script_root }}/removelink");
         xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
-        xhttp.send();
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        data = JSON.stringify({ "id": id });
+        xhttp.send(data);
     }
 
     function newcategory() {
@@ -223,9 +229,11 @@
             else if (this.readyState == 4 && this.status == 401)
                 alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
         };
-        xhttp.open("POST", "{{ request.script_root }}/newcategory?name=" + name);
+        xhttp.open("POST", "{{ request.script_root }}/newcategory");
         xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
-        xhttp.send();
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        data = JSON.stringify({ "name": name });
+        xhttp.send(data);
     }
 
     function editcategory(id, name) {
@@ -239,9 +247,11 @@
             else if (this.readyState == 4 && this.status == 401)
                 alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
         };
-        xhttp.open("POST", "{{ request.script_root }}/editcategory?id=" + id + "&name=" + name);
+        xhttp.open("POST", "{{ request.script_root }}/editcategory");
         xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
-        xhttp.send();
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        data = JSON.stringify({ "id": id, "name": name });
+        xhttp.send(data);
     }
 
     function removecategory(id) {
@@ -253,9 +263,11 @@
             else if (this.readyState == 4 && this.status == 401)
                 alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
         };
-        xhttp.open("POST", "{{ request.script_root }}/removecategory?id=" + id);
+        xhttp.open("POST", "{{ request.script_root }}/removecategory");
         xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
-        xhttp.send();
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        data = JSON.stringify({ "id": id });
+        xhttp.send(data);
     }
     {% endif %}
 </script>

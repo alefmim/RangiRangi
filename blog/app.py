@@ -946,7 +946,7 @@ def index():
 
 
 # This function sends the posts to the client
-@app.route("/page", methods=['POST'])
+@app.route("/page", methods=['GET'])
 @limiter.limit("60/second")
 @authentication_required
 def page():
@@ -1256,9 +1256,9 @@ def deletecomment():
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
     # Check if it's not a bad request
-    if 'id' in request.args:
+    if 'id' in request.json:
         # Get the comment id from the request
-        id = request.args.get('id', type=int, default=-1)
+        id = int(request.json.get('id'))
         # Find the comment by its id
         comment = dbcomment.query.filter(dbcomment.cmtid == id)
         # Check if the comment exists
@@ -1290,9 +1290,9 @@ def approvecomment():
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
     # Check if it's not a bad request
-    if 'id' in request.args:
+    if 'id' in request.json:
         # Get the comment id from the request
-        id = request.args.get('id', type=int, default=-1)
+        id = int(request.json.get('id'))
         # Find the comment by its id
         comment = dbcomment.query.filter(dbcomment.cmtid == id).first()
         # Check if the comment exists
@@ -1551,9 +1551,9 @@ def deletepost():
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
     # If it's not a bad request
-    if 'id' in request.args:
+    if 'id' in request.json:
         # Get postid
-        id = request.args.get('id', type=int)
+        id = int(request.json.get('id'))
         # Return "Failure!" if 'id' is wrong!
         if dbpost.query.filter(dbpost.postid == id).first() is None:
             return ('', 400)
@@ -1665,9 +1665,9 @@ def newcategory():
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
     # If it's not a bad request
-    if 'name' in request.args:
+    if 'name' in request.json:
         # Get 'name' from request
-        name = request.args.get('name')
+        name = request.json.get('name')
         order = 0
         # Return "Failure!" if name is empty
         if name == '':
@@ -1703,10 +1703,10 @@ def editcategory():
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
     # If it's not a bad request
-    if 'id' in request.args:
+    if 'id' in request.json and 'name' in request.json:
         # Get new category name from the request
-        id = request.args.get('id', type=int)
-        name = request.args.get('name', type=str, default='')
+        id = int(request.json.get('id'))
+        name = request.json.get('name')
         order = 0
         # Return "Failure!" if 'id' is wrong!
         if dbcategory.query.filter(dbcategory.catid == id).first() is None:
@@ -1748,9 +1748,9 @@ def removecategory():
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
     # If it's not a bad request
-    if 'id' in request.args:
+    if 'id' in request.json:
         # Get the category id from the request
-        id = request.args.get('id', type=int)
+        id = int(request.json.get('id'))
         # Return "Failure!" if 'id' is wrong!
         if dbcategory.query.filter(dbcategory.catid == id).first() is None:
             return ('', 400)
@@ -1792,11 +1792,11 @@ def addlink():
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
     # If it's not a bad request
-    if 'address' in request.args \
-            and 'name' in request.args:
+    if 'address' in request.json \
+            and 'name' in request.json:
         # Get the data from the request
-        name = request.args.get('name', type=str)
-        addr = request.args.get('address', type=str)
+        name = request.json.get('name')
+        addr = request.json.get('address')
         address = urllib.parse.unquote(addr)
         order = 0
         # Return "Failure!" if name or address is empty
@@ -1840,11 +1840,13 @@ def editlink():
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
     # If it's not a bad request
-    if 'id' in request.args:
+    if 'id' in request.json and \
+       'name' in request.json and \
+       'address' in request.json:
         # Get the data from the request
-        id = request.args.get('id', type=int)
-        name = request.args.get('name', type=str)
-        addr = request.args.get('address', type=str)
+        id = int(request.json.get('id'))
+        name = request.json.get('name')
+        addr = request.json.get('address')
         address = urllib.parse.unquote(addr)
         order = 0
         # Return "Failure!" if 'id' is wrong!
@@ -1905,9 +1907,9 @@ def removelink():
     # This page requires admin privileges so we'll check if
     # it's requested by admin or not by using @login_required
     # If it's not a bad request
-    if 'id' in request.args:
+    if 'id' in request.json:
         # Get link's id from the request
-        id = request.args.get('id', type=int)
+        id = int(request.json.get('id'))
         # Return "Failure!" if 'id' is wrong!
         if dblink.query.filter(dblink.linkid == id).first() is None:
             return ('', 400)

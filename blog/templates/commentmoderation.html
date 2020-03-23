@@ -33,9 +33,11 @@
                 else if (this.readyState == 4 && this.status == 401)
                     alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
             };
-            xhttp.open("POST", "{{ request.script_root }}/deletecomment?id=" + id);
+            xhttp.open("POST", "{{ request.script_root }}/deletecomment");
             xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
-            xhttp.send();
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            data = JSON.stringify({ "id": id });
+            xhttp.send(data);
         }
         function approvecomment(id) {
             if (id < 1) return;
@@ -46,9 +48,11 @@
                 else if (this.readyState == 4 && this.status == 401)
                     alert('شما مجوز لازم برای انجام این کار را ندارید!\n\nدر صورتی که مدیر سیستم هستید ابتدا به صحفه ی اصلی بازگردید و با وارد کردن گذرواژه وارد شوید.');
             };
-            xhttp.open("POST", "{{ request.script_root }}/approvecomment?id=" + id);
+            xhttp.open("POST", "{{ request.script_root }}/approvecomment");
             xhttp.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
-            xhttp.send();
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            data = JSON.stringify({ "id": id });
+            xhttp.send(data);
         }
     </script>
 
