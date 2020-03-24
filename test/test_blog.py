@@ -138,6 +138,44 @@ class BlogTests(TestCase):
                 dbcategory.name == 'anothercategory').first()
             self.assertIsNotNone(cat)
 
+    def test_invalid_newcategory_noname(self):
+        with self.client:
+            self.login()
+            response = self.client.post('/newcategory',
+                                        data=json.dumps(dict()),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 400)
+            cat = dbcategory.query.filter(dbcategory.catid == 1).first()
+            self.assertIsNone(cat)
+
+    def test_invalid_newcategory_emptyname(self):
+        with self.client:
+            self.login()
+            response = self.client.post('/newcategory',
+                                        data=json.dumps(dict(name='')),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 400)
+            cat = dbcategory.query.filter(dbcategory.catid == 1).first()
+            self.assertIsNone(cat)
+
+    def test_newcategory_samename(self):
+        with self.client:
+            self.login()
+            # Create a new category first
+            category = dbcategory('anothercategory', 0)
+            db.session.add(category)
+            db.session.commit()
+            response = self.client.post('/newcategory',
+                                        data=json.dumps(
+                                            dict(name='anothercategory')),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+            cat = dbcategory.query.filter(dbcategory.catid == 2).first()
+            self.assertIsNone(cat)
+
     def test_editcategory(self):
         with self.client:
             self.login()
@@ -154,6 +192,91 @@ class BlogTests(TestCase):
             cat = dbcategory.query.filter(dbcategory.catid == 1).first()
             self.assertIsNotNone(cat)
             self.assertEqual(cat.name, 'editedcategory')
+
+    def test_invalid_editcategory_noidname(self):
+        with self.client:
+            self.login()
+            # Create a new category first
+            category = dbcategory('Other', 0)
+            db.session.add(category)
+            db.session.commit()
+            response = self.client.post('/editcategory',
+                                        data=json.dumps(dict()),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 400)
+            cat = dbcategory.query.filter(dbcategory.catid == 1).first()
+            self.assertIsNotNone(cat)
+            self.assertEqual(cat.name, 'Other')
+
+    def test_invalid_editcategory_id(self):
+        with self.client:
+            self.login()
+            # Create a new category first
+            category = dbcategory('Other', 0)
+            db.session.add(category)
+            db.session.commit()
+            response = self.client.post('/editcategory',
+                                        data=json.dumps(
+                                            dict(id=100, name='Test')),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 400)
+            cat = dbcategory.query.filter(dbcategory.catid == 1).first()
+            self.assertIsNotNone(cat)
+            self.assertEqual(cat.name, 'Other')
+
+    def test_invalid_editcategory_emptyname(self):
+        with self.client:
+            self.login()
+            # Create a new category first
+            category = dbcategory('Other', 0)
+            db.session.add(category)
+            db.session.commit()
+            response = self.client.post('/editcategory',
+                                        data=json.dumps(dict(id=1, name='')),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 400)
+            cat = dbcategory.query.filter(dbcategory.catid == 1).first()
+            self.assertIsNotNone(cat)
+            self.assertEqual(cat.name, 'Other')
+
+    def test_editcategory_samename(self):
+        with self.client:
+            self.login()
+            # Create a new category first
+            category = dbcategory('Other', 0)
+            db.session.add(category)
+            db.session.commit()
+            response = self.client.post('/editcategory',
+                                        data=json.dumps(
+                                            dict(id=1, name='Other')),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+            cat = dbcategory.query.filter(dbcategory.catid == 1).first()
+            self.assertIsNotNone(cat)
+            self.assertEqual(cat.name, 'Other')
+
+    def test_editcategory_existingname(self):
+        with self.client:
+            self.login()
+            # Create two new categories first
+            category = dbcategory('Other1', 0)
+            db.session.add(category)
+            category = dbcategory('Other2', 0)
+            db.session.add(category)
+            db.session.commit()
+            response = self.client.post('/editcategory',
+                                        data=json.dumps(
+                                            dict(id=2, name='Other1')),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+            cat = dbcategory.query.filter(dbcategory.catid == 2).first()
+            self.assertIsNotNone(cat)
+            self.assertEqual(cat.name, 'Other2')
 
     def test_removecategory_nopost(self):
         with self.client:
@@ -487,6 +610,58 @@ class BlogTests(TestCase):
             self.assertEqual(response.status_code, 400)
             lnk = dblink.query.filter(dblink.name == 'removeme').first()
             self.assertIsNotNone(lnk)
+
+    def test_share(self):
+        with self.client:
+            self.login()
+            # Create a new category first
+            category = dbcategory('Other', 0)
+            db.session.add(category)
+            # Add a post to new category
+            post = dbpost(
+                'testtitle', 'testcontent',
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 0, 1,
+                '', 0)
+            db.session.add(post)
+            db.session.commit()
+            response = self.client.get('/share?postid=1',
+                                       follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'testtitle', response.data)
+            self.assertIn(b'testcontent', response.data)
+
+    def test_invalid_share_noid(self):
+        with self.client:
+            self.login()
+            # Create a new category first
+            category = dbcategory('Other', 0)
+            db.session.add(category)
+            # Add a post to new category
+            post = dbpost(
+                'testtitle', 'testcontent',
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 0, 1,
+                '', 0)
+            db.session.add(post)
+            db.session.commit()
+            response = self.client.get('/share', follow_redirects=False)
+            self.assertEqual(response.status_code, 400)
+
+    def test_invalid_share_id(self):
+        with self.client:
+            self.login()
+            # Create a new category first
+            category = dbcategory('Other', 0)
+            db.session.add(category)
+            # Add a post to new category
+            post = dbpost(
+                'testtitle', 'testcontent',
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 0, 1,
+                '', 0)
+            db.session.add(post)
+            db.session.commit()
+            response = self.client.get('/share?postid=100',
+                                       follow_redirects=False)
+            self.assertEqual(response.status_code, 400)
 
     # TODO: Add more tests!
 

@@ -1367,7 +1367,7 @@ def share():
     # Check if it's not a bad request
     if 'postid' in request.args:
         # Get 'id' from the request
-        id = request.args.get('postid', type=int)
+        id = request.args.get('postid', type=int, default=-1)
         # Find the requested post
         post = dbpost.query.filter(dbpost.postid == id).first()
         # Check if the post exists and it's not a bad request
