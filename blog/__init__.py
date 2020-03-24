@@ -92,14 +92,3 @@ def create_app(test_config=None):
     app.wsgi_app = ProxyFix(app.wsgi_app)
     # Return app
     return app
-
-
-# def create_app(test_config=None):
-#     '''Create and configure an instance of the Flask application.'''
-#     global app
-#     return app
-
-# # If this module is the main program!
-# if __name__ == '__main__':
-#     # Run the program (For development purposes only!)
-#     app.run(debug=True)
