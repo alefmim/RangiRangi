@@ -1032,7 +1032,7 @@ def page():
             post['content'] = post['content'] + Markup('...<br><br>' + \
                 '<a href="'+ request.script_root + '/show?id=' + \
                 str(result.__dict__['postid']) + '" class="hashtag">' + \
-                'مشاهده ادامه مطلب...</a>')
+                tr('Continue Reading...') + '</a>')
         else:
             # Markup hashtags
             post['content'] = prcText(result.__dict__['content'],
