@@ -1738,6 +1738,8 @@ def editcategory():
         db.session.commit()
         # Return "Success!"
         return ('', 200)
+    # Return "Failure!"
+    return ('', 400)
 
 
 # This function handles removing the categories
