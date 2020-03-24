@@ -837,7 +837,8 @@ def after_request(response):
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     # Log the request and response
-    logger.info('<' + request.method + '>' + \
+    logger.info('[' + request.remote_addr + '] ' + \
+        '<' + request.method + '>' + \
         request.url + ' - '  + response.status)
     return response
 
@@ -851,7 +852,8 @@ def logErrors(error=None):
     '''
     if error:  # If there's any error
         # Log the request and error
-        logger.error('<' + request.method + '>' + \
+        logger.error('[' + request.remote_addr + '] ' + \
+            '<' + request.method + '>' + \
             request.url + ' - ' + repr(error))
 
 
