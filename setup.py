@@ -1,8 +1,8 @@
 from setuptools import find_packages
 from setuptools import setup
 
-#with open("README.md", "r") as fh:
-#    long_description = fh.read()
+# with open("README.md", "r") as fh:
+#     long_description = fh.read()
 description = "A simple flask based microblogging cms written in python."
 
 setup(
