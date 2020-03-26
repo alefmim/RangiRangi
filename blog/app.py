@@ -944,7 +944,10 @@ def index():
         # Save changes to the database
         db.session.commit()
     # Render the main page
-    return render_template("index.html", sidebar=sidebar(), config=conf)
+    return render_template("index.html",
+                           sidebar=sidebar(),
+                           config=conf,
+                           admin=session['logged_in'])
 
 
 # This function sends the posts to the client
