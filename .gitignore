@@ -8,6 +8,7 @@ htmlcov/
 todo.txt
 config*.json
 blog.py.*
+*.db-journal
 *.db
 *.log
 *.cmd

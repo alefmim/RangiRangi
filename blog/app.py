@@ -1314,7 +1314,7 @@ def approvecomment():
 
 
 # This function handles viewing and saving comments
-@app.route("/commentmoderation", methods=['POST', 'GET'])
+@app.route("/commentmoderation", methods=['GET'])
 @login_required
 def commentmoderation():
     '''

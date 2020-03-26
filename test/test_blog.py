@@ -663,6 +663,191 @@ class BlogTests(TestCase):
                                        follow_redirects=False)
             self.assertEqual(response.status_code, 400)
 
+    def test_post_page_get_noid(self):
+        with self.client:
+            self.login()
+            response = self.client.get('/post', follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+
+    def test_post_page_get_id(self):
+        with self.client:
+            self.login()
+            # Create a new category first
+            category = dbcategory('Other', 0)
+            db.session.add(category)
+            # Add a post to new category
+            post = dbpost(
+                'testtitle', 'testcontent',
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 0, 1,
+                'http://testaddr.com', 0)
+            db.session.add(post)
+            db.session.commit()
+            response = self.client.get('/post?id=1', follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'testtitle', response.data)
+            self.assertIn(b'testcontent', response.data)
+            self.assertIn(b'http://testaddr.com', response.data)
+
+    def test_post_page_post_noid(self):
+        with self.client:
+            self.login()
+            # add a new hashtag to database
+            hashtag = dbtag('test', 1, 0)
+            db.session.add(hashtag)
+            db.session.commit()
+            response = self.client.post('/post',
+                                        data=dict(
+                                            category='1',
+                                            disablecomments='No',
+                                            pinned='No',
+                                            title='testtitle',
+                                            mediaaddr='http://testaddr.com',
+                                            content='testcontent #test #post',
+                                            postid=''),
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+            post = dbpost.query.filter(dbpost.postid == 1).first()
+            self.assertIsNotNone(post)
+            self.assertEqual(post.category, 1)
+            self.assertEqual(post.flags, 0)
+            self.assertEqual(post.title, 'testtitle')
+            self.assertEqual(post.mediaaddr, 'http://testaddr.com')
+            self.assertEqual(post.content, 'testcontent #test #post')
+            hashtag1 = dbtag.query.filter(dbtag.keyword == 'test').first()
+            self.assertEqual(hashtag1.frequency, 2)
+            hashtag2 = dbtag.query.filter(dbtag.keyword == 'post').first()
+            self.assertEqual(hashtag2.frequency, 1)
+
+    def test_post_page_post_id(self):
+        with self.client:
+            self.login()
+            # Create two new categories
+            category = dbcategory('Test1', 0)
+            db.session.add(category)
+            category = dbcategory('Test2', 0)
+            db.session.add(category)
+            # add a new hashtag to database
+            hashtag = dbtag('test', 2, 0)
+            db.session.add(hashtag)
+            # add a new post to database
+            post = dbpost(
+                'testtitle', 'testcontent #test #post1',
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 0, 1,
+                'http://testaddr.com', 0)
+            db.session.add(post)
+            db.session.commit()
+            response = self.client.post(
+                '/post',
+                data=dict(category='2',
+                          disablecomments='No',
+                          pinned='No',
+                          title='testtitle2',
+                          mediaaddr='http://testaddr2.com',
+                          content='testcontent2 #test #post2',
+                          postid='1'),
+                follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+            post = dbpost.query.filter(dbpost.postid == 1).first()
+            self.assertIsNotNone(post)
+            self.assertEqual(post.category, 2)
+            self.assertEqual(post.flags, 0)
+            self.assertEqual(post.title, 'testtitle2')
+            self.assertEqual(post.mediaaddr, 'http://testaddr2.com')
+            self.assertEqual(post.content, 'testcontent2 #test #post2')
+            hashtag1 = dbtag.query.filter(dbtag.keyword == 'test').first()
+            self.assertEqual(hashtag1.frequency, 2)
+            hashtag2 = dbtag.query.filter(dbtag.keyword == 'post2').first()
+            self.assertEqual(hashtag2.frequency, 1)
+            hashtag3 = dbtag.query.filter(dbtag.keyword == 'post1').first()
+            self.assertIsNone(hashtag3)
+
+    def test_invalid_post_page_post_noid(self):
+        with self.client:
+            self.login()
+            response = self.client.post('/post',
+                                        data=dict(category='',
+                                                  disablecomments='',
+                                                  pinned='',
+                                                  title='',
+                                                  mediaaddr='',
+                                                  content='',
+                                                  postid=''),
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+            post = dbpost.query.filter(dbpost.postid == 1).first()
+            self.assertIsNone(post)
+
+    def test_deletepost(self):
+        with self.client:
+            self.login()
+            # add a new hashtag to database
+            hashtag = dbtag('test', 2, 0)
+            db.session.add(hashtag)
+            # add a new post to database
+            post = dbpost(
+                'testtitle', 'testcontent #test #post',
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 0, 1,
+                'http://testaddr.com', 0)
+            db.session.add(post)
+            db.session.commit()
+            response = self.client.post('/deletepost',
+                                        data=json.dumps(dict(id=1)),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 200)
+            post = dbpost.query.filter(dbpost.postid == 1).first()
+            self.assertIsNone(post)
+            hashtag1 = dbtag.query.filter(dbtag.keyword == 'test').first()
+            self.assertEqual(hashtag1.frequency, 1)
+            hashtag2 = dbtag.query.filter(dbtag.keyword == 'post').first()
+            self.assertIsNone(hashtag2)
+
+    def test_invalid_deletepost_noid(self):
+        with self.client:
+            self.login()
+            # add a new hashtag to database
+            hashtag = dbtag('test', 1, 0)
+            db.session.add(hashtag)
+            # add a new post to database
+            post = dbpost(
+                'testtitle', 'testcontent #test #post',
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 0, 1,
+                'http://testaddr.com', 0)
+            db.session.add(post)
+            db.session.commit()
+            response = self.client.post('/deletepost',
+                                        data=json.dumps(dict()),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 400)
+            post = dbpost.query.filter(dbpost.postid == 1).first()
+            self.assertIsNotNone(post)
+            hashtag1 = dbtag.query.filter(dbtag.keyword == 'test').first()
+            self.assertEqual(hashtag1.frequency, 1)
+
+    def test_invalid_deletepost_id(self):
+        with self.client:
+            self.login()
+            # add a new hashtag to database
+            hashtag = dbtag('test', 1, 0)
+            db.session.add(hashtag)
+            # add a new post to database
+            post = dbpost(
+                'testtitle', 'testcontent #test #post',
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 0, 1,
+                'http://testaddr.com', 0)
+            db.session.add(post)
+            db.session.commit()
+            response = self.client.post('/deletepost',
+                                        data=json.dumps(dict(id=10)),
+                                        content_type='application/json',
+                                        follow_redirects=True)
+            self.assertEqual(response.status_code, 400)
+            post = dbpost.query.filter(dbpost.postid == 1).first()
+            self.assertIsNotNone(post)
+            hashtag1 = dbtag.query.filter(dbtag.keyword == 'test').first()
+            self.assertEqual(hashtag1.frequency, 1)
+
     # TODO: Add more tests!
 
 
