@@ -614,7 +614,7 @@ def prcText(rawText: str, url: str) -> str:
     Replaces all hashtags in the 'rawText' with linked hashtags 
     (Adds html <a> tag to all hashtags in the 'rawText' 
     and links them to their page!) for example calling 
-    prcText('hello #dear user!', 'https://www.site.com/blog/') 
+    prcText('hello #dear user!', 'https://www.site.com/blog') 
     will return the following string :
     "hello 
     <a href='https://www.site.com/blog/?tag=dear' class='hashtag'>#dear</a>
@@ -627,7 +627,7 @@ def prcText(rawText: str, url: str) -> str:
             which may contain some hashtags
     url : str
             Address of our script including domain name
-            (for example : https://www.site.com/blog/)
+            (for example : https://www.site.com/blog)
             Send request.script_root as its value
             if you don't know how to use it
 
@@ -1122,7 +1122,7 @@ def config():
                 'Please try again.'
                 ))
             # And render the config page without changing the config
-            render_template("config.html", form=form), 401
+            return render_template("config.html", form=form), 401
         # If admin requested to change the password
         if newpassword != '':
             # Hash the new password
@@ -1174,6 +1174,8 @@ def comments():
     autoapproval = 2 if config['autoapproval'] == 'Yes' \
         or session['logged_in'] == True else 0
     disablecomments = config['disablecomments']
+    if disablecomments != 'Yes':
+        disablecomments = 'Yes' if (post.flags & 1) == 1 else 'No'
     # Form object which holds the request data
     # We'll set postid value to hidden field
     form = CommentForm(request.form, postid=postid)
@@ -1240,7 +1242,7 @@ def comments():
                       for val in form.errors.values()) \
                           .replace('[\'','').replace('\']',''))
     # Redirect to show post page if it was the referrer
-    if '/show?' in request.referrer:
+    if request.referrer is not None and '/show?' in request.referrer:
         return redirect(request.referrer)
     # Render the comments page
     return render_template("comments.html",
@@ -1603,7 +1605,7 @@ def show():
     post['postid'] = result.__dict__['postid']
     post['gdatetime'] = result.__dict__['gdatetime']
     post['title'] = result.__dict__['title']
-    post['category'] = result.__dict__['category']
+    post['category'] = category.name
     post['mediaaddr'] = result.__dict__['mediaaddr']
     # If user is not admin then we'll show them approved comments
     if (session['logged_in'] == False):
