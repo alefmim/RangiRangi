@@ -2,13 +2,14 @@
 .vscode/
 build/
 dist/
+venv/
 blog_pkg_*/
 __pycache__/
 htmlcov/
 todo.txt
 config*.json
+*.py[cod]
 blog.py.*
-*.db-journal
-*.db
+*.db*
 *.log
 *.cmd
