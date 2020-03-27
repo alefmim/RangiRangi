@@ -1,4 +1,3 @@
-# project/test_basic.py
 #!/usr/bin/python3
 
 import os
