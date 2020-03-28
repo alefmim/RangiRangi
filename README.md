@@ -137,12 +137,12 @@ python -m flask run
 ```
 </div>
 
-برای راحتی کار می تونید دستور زیر رو اجرا کنید تا یه فایل به اسم run.cmd داخل مسیر C:\Blog\RangiRangi ایجاد بشه و با اجرا کردنش بدون نیاز به باز کردن خط فرمان و انجام دادن مراحل آخر برنامه رو اجرا کنید.
+برای راحتی کار می تونید دستور زیر رو اجرا کنید تا یه فایل به اسم Run.cmd داخل مسیر C:\Blog\RangiRangi ایجاد بشه و با اجرا کردنش بدون نیاز به باز کردن خط فرمان و انجام دادن مراحل آخر برنامه رو اجرا کنید.
 
 <div dir="ltr">
 
 ```cmd
-echo cmd /k "cd /d C:\Blog\rangirangi\venv\Scripts & activate & cd /d C:\Blog\rangirangi\blog & set FLASK_ENV=development & python -m flask run" > C:\Blog\rangirangi\run.cmd
+echo cmd /k "cd /d C:\Blog\rangirangi\venv\Scripts & activate & cd /d C:\Blog\rangirangi\blog & set FLASK_ENV=development & python -m flask run" > C:\Blog\rangirangi\Run.cmd
 ```
 </div>
 
