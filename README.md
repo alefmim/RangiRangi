@@ -63,51 +63,51 @@ A simple flask based microblogging cms written in python
 اول مطمئن بشید که مسیر پایتون به متغییر محلی PATH اضافه شده. برای انجام این کار دستور زیر رو اجرا کنید :
 
 <div dir="ltr">
-```cmd
+```
 python -V
 ```
 </div>
 در صورتی که متن Python 3.x رو مشاهده کردید یعنی پایتون با موفقیت نصب و به متغییر محلی PATH اضافه شده. در ادامه دستورات زیر رو برای نصب virutalenv اجرا کنید :
 <div dir="ltr">
-```cmd
+```
 pip install virtualenv
 ```
 </div>
 حالا یه مسیر برای نصب برنامه انتخاب کنید برای مثال C:\Blog اول باید مسیر رو ایجاد کنیم و بعد با کمک دستور cd وارد C:\Blog بشیم :
 <div dir="ltr">
-```cmd
+```
 mkdir C:\Blog
 cd /d C:\Blog
 ```
 </div>
 در صورتی که از git استفاده می کنید برای دریافت پروژه دستور زیر رو اجرا کنید در غیر این صورت فایل zip رو دانلود و تو مسیر C:\Blog استخراج کنید.
 <div dir="ltr">
-```cmd
+```
 git clone https://github.com/alefmim/rangirangi
 ```
 </div>
 بعد از انجام مرحله ی قبل یه پوشه به اسم RangiRangi که حاوی فایل های پروژه هست داخل مسیر C:\Blog ظاهر میشه و با دستور زیر وارد پوشه جدید میشیم :
 <div dir="ltr">
-```cmd
+```
 cd rangirangi
 ```
 </div>
 در ادامه به کمک دستور زیر داخل این مسیر یه virtualenv پایتون ایجاد می کنیم و virtualenv رو فعال می کنیم :
 <div dir="ltr">
-```cmd
+```
 virtualenv venv
 \.venv\Scripts\activate.bat
 ```
 </div>
 بعد از فعال شدن virtualenv پکیج های مورد نیاز پروژه رو به کمک دستور زیر نصب می کنیم :
 <div dir="ltr">
-```cmd
+```
 pip install -r requirements.txt
 ```
 </div>
 کار تقریباً تموم شده و می تونیم پروژه رو اجرا کنیم. برای اجرای پروژه اول وارد پوشه blog که کد های برنامه داخلش هست میشیم و برنامه رو اجرا می کنیم :
 <div dir="ltr">
-```cmd
+```
 cd blog
 set FLASK_ENV=development
 python -m flask run
@@ -115,7 +115,7 @@ python -m flask run
 </div>
 برای راحتی کار می تونید دستورات زیر رو اجرا کنید تا یه فایل به اسم run.cmd داخل مسیر C:\Blog\RangiRangi\ ایجاد بشه و با اجرا کردنش بدون نیاز به باز کردن خط فرمان و انجام دادن مراحل آخر برنامه رو اجرا کنید.
 <div dir="ltr">
-```cmd
+```
 echo cmd /k "cd /d C:\Blog\rangirangi\venv\Scripts & activate & cd /d C:\Blog\rangirangi\blog & set FLASK_ENV=development & python -m flask run" > C:\Blog\rangirangi\run.cmd
 ```
 </div>
