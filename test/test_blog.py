@@ -30,9 +30,7 @@ class BlogTests(TestCase):
 
     def make_config_file(self):
         session['logged_in'] = True
-        # Create a new config
         newconfig = {}
-        # Assign default values to our configuration
         newconfig['title'] = 'Blog Title'
         newconfig['desc'] = 'Blog Description'
         newconfig['dispname'] = tr('Admin')
@@ -42,10 +40,8 @@ class BlogTests(TestCase):
         newconfig['calendar'] = 'Jalali'
         newconfig['autoapproval'] = 'No'
         newconfig['disablecomments'] = 'No'
-        # Save the default password (md5 hash of 'admin') in our new config
         newpwd = hashlib.md5('admin'.encode('utf-8'))
         newconfig['pwd'] = newpwd.hexdigest()
-        # Create a config file using our new config
         saveConfig(newconfig)
 
     def login(self):
