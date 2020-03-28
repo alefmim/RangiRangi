@@ -113,7 +113,7 @@ cd rangirangi
 
 ```cmd
 virtualenv venv
-\.venv\Scripts\activate.bat
+.\venv\Scripts\activate.bat
 ```
 </div>
 
