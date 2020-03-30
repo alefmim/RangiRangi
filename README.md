@@ -147,13 +147,129 @@ echo cmd /k "cd /d C:\Blog\rangirangi\venv\Scripts & activate & cd /d C:\Blog\ra
 </div>
 
 
-### لینوکس
+### لینوکس CentOS
 
-به زودی آموزش رو کامل می کنم...
+نرم افزار روی توزیع CentOS نسخه 7 تست شده و می تونید طی مراحل زیر نصبش کنید : 
 
-### فری بی اس دی
+توجه داشته باشید که این روش فقط مناسب تست و توسعه نرم افزار هست و برای محیط اجرایی توصیه نمیشه! 
 
-به زودی آموزش رو کامل می کنم...
+قبل از هر چیز بهتره سیستم رو بروزرسانی کنید برای انجام این کار دستور زیر رو اجرا کنید :
+
+<div dir="ltr">
+
+```bash
+sudo yum update -y
+```
+
+</div>
+
+بعد از بروزرسانی پکیج های مورد نیاز رو به کمک دستور زیر نصب کنید. می تونید از نصب git صرف نظر کنید و برای دریافت پروژه فایل zip رو دانلود کنید : 
+
+```bash
+sudo yum install python3 git -y
+```
+
+</div>
+
+بعد از اجرای دستور بالا به کمک دستور زیر مطمئن بشید که نسخه مورد نظر پایتون نصب شده :
+
+<div dir="ltr">
+
+```bash
+python3 -V
+```
+
+</div>
+
+در ادامه پکیج virtualenv رو برای کاربر فعلی نصب می کنیم :
+
+<div dir="ltr">
+
+```bash
+pip3 install virtualenv --user
+```
+</div>
+
+حالا یه مسیر برای دانلود پروژه بسازید : 
+
+<div dir="ltr">
+
+```bash
+mkdir ~/git
+cd ~/git
+```
+</div>
+
+پروژه رو به کمک git دریافت کنید یا اگه git رو نصب نکردید فایل zip پروژه رو دانلود کنید و تو مسیر ~/git استخراج کنید :
+
+<div dir="ltr">
+
+```bash
+git clone https://github.com/alefmim/rangirangi
+```
+</div>
+
+بعد از انجام مرحله ی قبل یه پوشه به اسم rangirangi که حاوی فایل های پروژه هست داخل مسیر ~/git ظاهر میشه و با دستور زیر وارد پوشه جدید میشیم :
+
+<div dir="ltr">
+
+```bash
+cd ./rangirangi
+```
+</div>
+
+در ادامه به کمک دستور زیر داخل این مسیر یه virtualenv پایتون ایجاد می کنیم و virtualenv رو فعال می کنیم :
+
+<div dir="ltr">
+
+```bash
+python3 -m virtualenv venv
+source ./venv/bin/activate
+```
+</div>
+
+بعد از فعال شدن virtualenv پکیج های مورد نیاز پروژه رو به کمک دستور زیر نصب می کنیم :
+
+<div dir="ltr">
+
+```bash
+pip3 install -r requirements.txt
+```
+</div>
+
+کار تقریباً تموم شده و می تونیم پروژه رو اجرا کنیم. برای اجرای پروژه اول وارد پوشه blog که کد های برنامه داخلش هست میشیم و برنامه رو اجرا می کنیم :
+
+<div dir="ltr">
+
+```bash
+cd blog
+export FLASK_ENV=development
+python3 -m flask run
+```
+</div>
+
+ برای راحتی کار می تونید دستورات زیر رو اجرا کنید تا یه فایل به اسم run.sh داخل مسیر ~/git/rangirangi ایجاد بشه و با اجرا کردنش بدون انجام مراحل اضافی پروژه اجرا بشه.
+
+<div dir="ltr">
+
+```bash
+echo '#!/bin/bash' > run.sh
+echo 'source ./venv/bin/activate' >> run.sh
+echo 'cd ./blog' >> run.sh
+echo 'export FLASK_ENV=development' >> run.sh
+echo 'python3 -m flask run' >> run.sh
+chmod +x ./run.sh
+```
+</div>
+
+بعد از انجام مرحله ی قبل کافیه اسکریپت run.sh رو اجرا کنید تا پروژه اجرا بشه :
+
+<div dir="ltr">
+
+```bash
+./run.sh
+```
+</div>
 
 ---
 
