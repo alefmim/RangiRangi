@@ -147,7 +147,10 @@ echo cmd /k "cd /d C:\Blog\rangirangi\venv\Scripts & activate & cd /d C:\Blog\ra
 </div>
 
 
+
+
 ### لینوکس CentOS
+
 
 نرم افزار روی توزیع CentOS نسخه 7 تست شده و می تونید طی مراحل زیر نصبش کنید : 
 
