@@ -276,6 +276,15 @@ chmod +x ./run.sh
 ```
 </div>
 
+یا اگر داخل مسیر ~/git/rangirangi نیستید :
+
+<div dir="ltr">
+
+```bash
+~/git/rangirangi/run.sh
+```
+</div>
+
 ---
 
 # توسعه رنگی رنگی
