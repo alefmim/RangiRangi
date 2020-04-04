@@ -117,19 +117,19 @@
 		{% endif %}
 		{% endfor %}
 		{% if (var.counter == 0) and (not admin) and (disablecomments != 'Yes') %}
-		<p class="center content">هنوز نظری برای این پست ثبت نشده است.</p>
+		<p class="center content">هنوز نظری برای این مطلب ثبت نشده است.</p>
 		{% endif %}
 		{% if (not admin) and (disablecomments == 'Yes') %}
 	</div>
 	<div class="comments">
-		<p class="center content">ثبت نظرات برای این پست غیرفعال است.</p>
+		<p class="center content">ثبت نظرات برای این مطلب غیرفعال است.</p>
 	</div>
 	{% endif %}
 	{% else %}
 	{% if (admin) or (disablecomments != 'Yes') %}
-	<p class="center content">هنوز نظری برای این پست ثبت نشده است.</p>
+	<p class="center content">هنوز نظری برای این مطلب ثبت نشده است.</p>
 	{% else %}
-	<p class="center content">ثبت نظرات برای این پست غیرفعال است.</p>
+	<p class="center content">ثبت نظرات برای این مطلب غیرفعال است.</p>
 	{% endif %}
 	{% endif %}
 	</div>
